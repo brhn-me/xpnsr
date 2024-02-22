@@ -1,0 +1,75 @@
+@startuml
+
+!theme plain
+
+entity "Bill" {
+  * id: bigint (PK, AUTO_INCREMENT)
+  --
+  * amount: decimal(38,2) NOT NULL
+  * tenure: int NOT NULL
+  * user_id: bigint (FK) NOT NULL
+  * category_id: varchar(255) (FK) NOT NULL
+}
+
+entity "Budget" {
+  * id: bigint (PK, AUTO_INCREMENT)
+  --
+  * amount: decimal(21,2) NOT NULL
+  currency: varchar(10)
+  title: varchar(100)
+  * category_id: varchar(255) (FK) NOT NULL
+  description: varchar(255)
+}
+
+entity "Category" {
+  * id: varchar(255) (PK)
+  --
+  icon: varchar(50)
+  * name: varchar(100) NOT NULL
+  description: varchar(255)
+  parent_id: varchar(255)
+}
+
+entity "Transaction" {
+  * id: bigint (PK, AUTO_INCREMENT)
+  --
+  * amount: decimal(21,2) NOT NULL
+  due: decimal(21,2)
+  * date: datetime(6) NOT NULL
+  currency: varchar(10)
+  city: varchar(100)
+  country: varchar(100)
+  title: varchar(100)
+  description: varchar(255)
+  * primary_category_id: varchar(255) (FK) NOT NULL
+  * secondary_category_id: varchar(255) (FK) NOT NULL
+  tags: varchar(255)
+  * type: enum('EARNING','EXPENSE') NOT NULL
+}
+
+entity "User" {
+  * id: bigint (PK, AUTO_INCREMENT)
+  --
+  * activated: bit(1) NOT NULL
+  * created_date: datetime(6) NOT NULL
+  last_modified_date: datetime(6)
+  created_by: varchar(50)
+  first_name: varchar(50)
+  last_modified_by: varchar(50)
+  last_name: varchar(50)
+  * login: varchar(50) NOT NULL, UNIQUE
+  * password_hash: varchar(60) NOT NULL
+  email: varchar(255), UNIQUE
+}
+
+' Relationships
+Bill }o-- User : "user_id"
+Bill }o-- Category : "category_id"
+Budget }o-- User : "user_id"
+Budget }o-- Category : "category_id"
+Transaction }o-- User : "user_id"
+Transaction }o-- Category : "primary_category_id"
+Transaction }o-- Category : "secondary_category_id"
+
+@enduml
+

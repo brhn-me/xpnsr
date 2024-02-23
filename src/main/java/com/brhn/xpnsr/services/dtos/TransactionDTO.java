@@ -1,80 +1,53 @@
-package com.brhn.xpnsr.models;
+package com.brhn.xpnsr.services.dtos;
 
-import jakarta.persistence.*;
+import com.brhn.xpnsr.models.TransactionType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.data.annotation.Id;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
 
-@Entity
-@Table(name = "transactions")
-public class Transaction {
-
-    @jakarta.persistence.Id
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class TransactionDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 104L;
     private Long id;
-
     @NotNull(message = "Date cannot be null")
-    @Column(nullable = false)
     private Timestamp date;
 
     @NotNull(message = "Transaction type cannot be null")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 10)
     private TransactionType type;
 
     @NotNull(message = "Amount cannot be null")
-    @Column(nullable = false, precision = 21, scale = 2)
+    @Min(value = 0, message = "Amount must be greater than or equal to 0")
     private BigDecimal amount;
 
+    @NotNull(message = "Due cannot be null")
     @Min(value = 0, message = "Due must be greater than or equal to 0")
-    @Column(precision = 21, scale = 2)
     private BigDecimal due;
 
     @Size(max = 100, message = "Title must be up to 100 characters")
-    @Column(length = 100)
     private String title;
 
     @NotNull(message = "Currency cannot be null")
     @Size(min = 1, max = 10, message = "Currency must be between 1 and 10 characters")
-    @Column(length = 10, nullable = false)
     private String currency;
 
     @Size(max = 100, message = "City must be up to 100 characters")
-    @Column(length = 100)
     private String city;
 
     @Size(max = 100, message = "Country must be up to 100 characters")
-    @Column(length = 100)
     private String country;
 
     @Size(max = 255, message = "Description cannot exceed 255 characters")
-    @Column(length = 255)
     private String description;
 
     @Size(max = 255, message = "Tags cannot exceed 255 characters")
-    @Column(length = 255)
     private String tags;
 
-    @NotNull(message = "Primary category cannot be null")
-    @ManyToOne
-    @JoinColumn(name = "primary_category_id", nullable = false)
-    private Category primaryCategory;
-
-    @NotNull(message = "Secondary category cannot be null")
-    @ManyToOne
-    @JoinColumn(name = "secondary_category_id", nullable = false)
-    private Category secondaryCategory;
-
-    @NotNull(message = "User cannot be null")
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
     public Long getId() {
         return id;
@@ -164,36 +137,11 @@ public class Transaction {
         this.tags = tags;
     }
 
-    public Category getPrimaryCategory() {
-        return primaryCategory;
-    }
-
-    public void setPrimaryCategory(Category primaryCategory) {
-        this.primaryCategory = primaryCategory;
-    }
-
-    public Category getSecondaryCategory() {
-        return secondaryCategory;
-    }
-
-    public void setSecondaryCategory(Category secondaryCategory) {
-        this.secondaryCategory = secondaryCategory;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Transaction that = (Transaction) o;
+        TransactionDTO that = (TransactionDTO) o;
         return Objects.equals(id, that.id);
     }
 
@@ -204,7 +152,7 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return "Transaction{" +
+        return "TransactionDTO{" +
                 "id=" + id +
                 ", date=" + date +
                 ", type=" + type +
@@ -216,9 +164,6 @@ public class Transaction {
                 ", country='" + country + '\'' +
                 ", description='" + description + '\'' +
                 ", tags='" + tags + '\'' +
-                ", primaryCategory=" + primaryCategory +
-                ", secondaryCategory=" + secondaryCategory +
-                ", user=" + user +
                 '}';
     }
 }

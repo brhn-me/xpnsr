@@ -1,43 +1,27 @@
-package com.brhn.xpnsr.models;
+package com.brhn.xpnsr.services.dtos;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.data.annotation.Id;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-@Entity
-@Table(name = "bills")
-public class Bill {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @jakarta.persistence.Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class BillDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 101L;
     private Long id;
-
     @NotNull(message = "Tenure cannot be null")
     @Min(value = 0, message = "Tenure must be a positive integer")
-    @Column(nullable = false)
     private Integer tenure;
 
     @NotNull(message = "Amount cannot be null")
     @Min(value = 0, message = "Amount must be greater than or equal to 0")
-    @Column(nullable = false)
     private BigDecimal amount;
 
-    @NotNull
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @NotNull
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @NotNull(message = "Category cannot be null")
+    private String categoryId;
 
     public Long getId() {
         return id;
@@ -63,44 +47,34 @@ public class Bill {
         this.amount = amount;
     }
 
-    public User getUser() {
-        return user;
+    public String getCategoryId() {
+        return categoryId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Bill bill = (Bill) o;
-        return Objects.equals(id, bill.id) && Objects.equals(tenure, bill.tenure) && Objects.equals(amount, bill.amount);
+        BillDTO billDTO = (BillDTO) o;
+        return Objects.equals(id, billDTO.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, tenure, amount);
+        return Objects.hash(id);
     }
 
     @Override
     public String toString() {
-        return "Bill{" +
+        return "BillDTO{" +
                 "id=" + id +
                 ", tenure=" + tenure +
                 ", amount=" + amount +
-                ", user=" + user +
-                ", category=" + category +
+                ", categoryId='" + categoryId + '\'' +
                 '}';
     }
 }
-

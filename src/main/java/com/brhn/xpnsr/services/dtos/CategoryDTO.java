@@ -1,46 +1,38 @@
-package com.brhn.xpnsr.models;
+package com.brhn.xpnsr.services.dtos;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.data.annotation.Id;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Entity
-@Table(name = "categories")
-public class Category implements Serializable {
+public class CategoryDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 103L;
 
-    private static final long serialVersionUID = 3L;
-
-    @jakarta.persistence.Id
-    @Id
     private String id;
 
     @NotNull(message = "Name cannot be null")
     @Size(min = 1, max = 100, message = "Name must be between 1 and 100 characters")
-    @Column(nullable = false, length = 100)
     private String name;
 
     @Size(max = 50, message = "Icon reference must be up to 50 characters")
-    @Column(length = 50)
     private String icon;
 
     @Size(max = 255, message = "Description cannot exceed 255 characters")
-    @Column(length = 255)
     private String description;
 
-    @Column(name = "parent_id")
     private String parentId;
 
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    // Getters and setters...
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -79,8 +71,8 @@ public class Category implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Category category = (Category) o;
-        return Objects.equals(id, category.id);
+        CategoryDTO that = (CategoryDTO) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override
@@ -90,12 +82,12 @@ public class Category implements Serializable {
 
     @Override
     public String toString() {
-        return "Category{" +
+        return "CategoryDTO{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", icon='" + icon + '\'' +
                 ", description='" + description + '\'' +
-                ", parentId=" + parentId +
+                ", parentId='" + parentId + '\'' +
                 '}';
     }
 }

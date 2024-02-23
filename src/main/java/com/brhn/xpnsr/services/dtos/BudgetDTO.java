@@ -1,52 +1,42 @@
-package com.brhn.xpnsr.models;
+package com.brhn.xpnsr.services.dtos;
 
-import jakarta.persistence.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.data.annotation.Id;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-@Entity
-@Table(name = "budgets")
-public class Budget {
-
-    private static final long serialVersionUID = 2L;
-
-    @jakarta.persistence.Id
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class BudgetDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 102L;
     private Long id;
 
     @NotNull(message = "Title cannot be null")
     @Size(min = 1, max = 100, message = "Title must be between 1 and 100 characters")
-    @Column(length = 100, nullable = false)
     private String title;
 
     @Size(max = 255, message = "Description cannot be more than 255 characters")
-    @Column(length = 255)
     private String description;
 
     @NotNull(message = "Amount cannot be null")
     @Min(value = 0, message = "Amount must be greater than or equal to 0")
-    @Column(nullable = false, precision = 21, scale = 2)
     private BigDecimal amount;
 
-    @Size(max = 10, message = "Currency cannot be greater than 10 characters")
-    @Column(length = 10)
+    @NotNull(message = "Currency cannot be null")
+    @Size(min = 1, max = 10, message = "Currency must be between 1 and 10 characters")
     private String currency;
 
     @NotNull(message = "Category cannot be null")
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    private Long categoryId;
 
     @NotNull(message = "User cannot be null")
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Long userId;
 
     public Long getId() {
         return id;
@@ -88,28 +78,28 @@ public class Budget {
         this.currency = currency;
     }
 
-    public Category getCategory() {
-        return category;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
-    public User getUser() {
-        return user;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Budget budget = (Budget) o;
-        return Objects.equals(id, budget.id);
+        BudgetDTO budgetDTO = (BudgetDTO) o;
+        return Objects.equals(id, budgetDTO.id);
     }
 
     @Override
@@ -119,14 +109,15 @@ public class Budget {
 
     @Override
     public String toString() {
-        return "Budget{" +
+        return "BudgetDTO{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", amount=" + amount +
                 ", currency='" + currency + '\'' +
-                ", category=" + category +
-                ", user=" + user +
+                ", categoryId=" + categoryId +
+                ", userId=" + userId +
                 '}';
     }
 }
+

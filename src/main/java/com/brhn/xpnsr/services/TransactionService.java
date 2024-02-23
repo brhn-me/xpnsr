@@ -39,7 +39,7 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    public Transaction get(Long id) {
+    public Transaction get(Long id) throws NotFoundError {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("Transaction not found with id " + id));
     }
@@ -48,7 +48,7 @@ public class TransactionService {
         return transactionRepository.findAll();
     }
 
-    public void delete(Long id) {
+    public void delete(Long id) throws NotFoundError {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("Transaction not found with id " + id));
         transactionRepository.delete(transaction);

@@ -1,5 +1,6 @@
 package com.brhn.xpnsr.apis;
 
+import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.models.Transaction;
 import com.brhn.xpnsr.services.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class TransactionApi {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Transaction> get(@PathVariable Long id) {
+    public ResponseEntity<Transaction> get(@PathVariable Long id) throws NotFoundError {
         Transaction transaction = transactionService.get(id);
         return ResponseEntity.ok(transaction);
     }
@@ -44,7 +45,7 @@ public class TransactionApi {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) throws NotFoundError {
         transactionService.delete(id);
         return ResponseEntity.noContent().build();
     }

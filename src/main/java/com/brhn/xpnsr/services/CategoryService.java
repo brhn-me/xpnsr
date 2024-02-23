@@ -22,7 +22,7 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    public Category update(Long id, Category categoryDetails) {
+    public Category update(Long id, Category categoryDetails) throws NotFoundError {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("Category not found with id " + id));
         category.setName(categoryDetails.getName());
@@ -32,7 +32,7 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    public Category getCategoryById(Long id) {
+    public Category getCategoryById(Long id) throws NotFoundError {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("Category not found with id " + id));
     }
@@ -41,7 +41,7 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
-    public void delete(Long id) {
+    public void delete(Long id) throws NotFoundError {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("Category not found with id " + id));
         categoryRepository.delete(category);

@@ -1,14 +1,11 @@
 package com.brhn.xpnsr.exceptions;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public class NotFoundError extends BaseApiError {
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class NotFoundError extends BaseError {
     public NotFoundError(String message) {
-        super(message);
-    }
-
-    @Override
-    public HttpStatus getStatus() {
-        return HttpStatus.NOT_FOUND;
+        super(message, HttpStatus.NOT_FOUND);
     }
 }

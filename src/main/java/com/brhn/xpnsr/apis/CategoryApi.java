@@ -1,5 +1,6 @@
 package com.brhn.xpnsr.apis;
 
+import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.models.Category;
 import com.brhn.xpnsr.services.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +21,19 @@ public class CategoryApi {
     }
 
     @PostMapping
-    public ResponseEntity<Category> add(@RequestBody Category category) {
-        Category newCategory = categoryService.add(category);
-        return ResponseEntity.ok(newCategory);
+    public ResponseEntity<Category> add(@RequestBody Category c) {
+        Category category = categoryService.add(c);
+        return ResponseEntity.ok(category);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category category) {
-        Category updatedCategory = categoryService.update(id, category);
-        return ResponseEntity.ok(updatedCategory);
+    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category c) throws NotFoundError {
+        Category category = categoryService.update(id, c);
+        return ResponseEntity.ok(category);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) throws NotFoundError {
         Category category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
@@ -44,7 +45,7 @@ public class CategoryApi {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) throws NotFoundError {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
     }

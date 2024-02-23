@@ -9,8 +9,8 @@ import org.springframework.web.context.request.WebRequest;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BaseApiError.class)
-    public ResponseEntity<ErrorResponse> handleBaseApiExceptions(BaseApiError ex, WebRequest request) {
+    @ExceptionHandler(BaseError.class)
+    public ResponseEntity<ErrorResponse> handleBaseApiExceptions(BaseError ex, WebRequest request) {
         ErrorResponse er = new ErrorResponse(ex.getStatus().value(), ex.getMessage());
         return new ResponseEntity<>(er, ex.getStatus());
     }

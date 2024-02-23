@@ -2,6 +2,7 @@ package com.brhn.xpnsr.models;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 
 import java.sql.Timestamp;
@@ -16,13 +17,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @Column(unique = true, nullable = false, length = 50)
     private String login;
 
+    @NotNull
     @Column(name = "password_hash", nullable = false, length = 60)
     private String passwordHash;
 
-    @Column(name = "first_name", length = 50)
+    @NotNull
+    @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
     @Column(name = "last_name", length = 50)
@@ -152,7 +156,7 @@ public class User {
         return "User{" +
                 "id=" + id +
                 ", login='" + login + '\'' +
-                ", passwordHash='" + passwordHash + '\'' +
+                ", passwordHash='********'" +  // IMPORTANT: password hash should not be even in toString()
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +

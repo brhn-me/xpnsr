@@ -3,6 +3,7 @@ package com.brhn.xpnsr.apis;
 import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.models.Transaction;
 import com.brhn.xpnsr.services.TransactionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/transactions")
+@Tag(name = "Transaction API", description = "The api for managing all transactions of XPNSR")
+@RequestMapping("/api/transactions")
 public class TransactionApi {
 
     private final TransactionService transactionService;
@@ -38,7 +40,7 @@ public class TransactionApi {
         return ResponseEntity.ok(transaction);
     }
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<Transaction>> getAll() {
         List<Transaction> transactions = transactionService.getAll();
         return ResponseEntity.ok().body(transactions);

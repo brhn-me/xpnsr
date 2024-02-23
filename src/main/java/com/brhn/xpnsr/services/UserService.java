@@ -4,6 +4,8 @@ import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.exceptions.UserExistsError;
 import com.brhn.xpnsr.models.User;
 import com.brhn.xpnsr.repositories.UserRepository;
+import com.brhn.xpnsr.services.dtos.UserDTO;
+import com.brhn.xpnsr.services.mappers.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,21 +18,26 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
+
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
-    public User add(User u) throws UserExistsError {
+    public UserDTO add(UserDTO u) throws UserExistsError {
         Optional<User> existingUser = userRepository.findByEmail(u.getEmail());
         if (existingUser.isPresent()) {
             throw new UserExistsError("User with email already exists");
         }
-        return userRepository.save(u);
+        User user = userMapper.userDTOToUser(u);
+        userRepository.save(user);
+        return userMapper.userToUserDTO(user);
     }
 
-    public User update(Long id, User u) throws NotFoundError, UserExistsError {
+    public UserDTO update(Long id, UserDTO u) throws NotFoundError, UserExistsError {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
@@ -40,22 +47,22 @@ public class UserService {
             throw new UserExistsError("Another user already exists with email: " + u.getEmail());
         }
 
-        user.setLogin(u.getLogin());
-        user.setPasswordHash(u.getPasswordHash());
-        user.setEmail(u.getEmail());
         user.setFirstName(u.getFirstName());
         user.setLastName(u.getLastName());
+        user.setEmail(u.getEmail());
         user.setActivated(u.getActivated());
 
-        return userRepository.save(user);
+        user = userRepository.save(user);
+
+        return userMapper.userToUserDTO(user);
     }
 
-    public User getById(Long id) throws NotFoundError {
+    public UserDTO getById(Long id) throws NotFoundError {
         Optional<User> user = userRepository.findById(id);
         if (user.isEmpty()) {
             throw new NotFoundError("User not found with id: " + id);
         }
-        return user.get();
+        return userMapper.userToUserDTO(user.get());
     }
 
     public User getByEmail(String email) throws NotFoundError {
@@ -66,8 +73,9 @@ public class UserService {
         return user.get();
     }
 
-    public Page<User> list(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<UserDTO> list(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        return users.map(userMapper::userToUserDTO);
     }
 
     public void delete(Long id) {

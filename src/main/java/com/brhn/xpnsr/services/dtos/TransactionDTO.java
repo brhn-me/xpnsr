@@ -2,6 +2,7 @@ package com.brhn.xpnsr.services.dtos;
 
 import com.brhn.xpnsr.models.TransactionType;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -15,24 +16,23 @@ public class TransactionDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 104L;
     private Long id;
-    @NotNull(message = "Date cannot be null")
+    @NotNull(message = "Date is required")
     private Timestamp date;
 
-    @NotNull(message = "Transaction type cannot be null")
+    @NotNull(message = "Transaction type is required")
     private TransactionType type;
 
-    @NotNull(message = "Amount cannot be null")
+    @NotNull(message = "Amount is required")
     @Min(value = 0, message = "Amount must be greater than or equal to 0")
     private BigDecimal amount;
 
-    @NotNull(message = "Due cannot be null")
     @Min(value = 0, message = "Due must be greater than or equal to 0")
     private BigDecimal due;
 
     @Size(max = 100, message = "Title must be up to 100 characters")
     private String title;
 
-    @NotNull(message = "Currency cannot be null")
+    @NotBlank(message = "Currency is required")
     @Size(min = 1, max = 10, message = "Currency must be between 1 and 10 characters")
     private String currency;
 

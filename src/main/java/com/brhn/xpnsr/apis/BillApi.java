@@ -2,6 +2,7 @@ package com.brhn.xpnsr.apis;
 
 import com.brhn.xpnsr.models.Bill;
 import com.brhn.xpnsr.services.BillService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/bills")
+@Tag(name = "Bill API", description = "The api for managing all bills of XPNSR")
+@RequestMapping("/api/bills")
 public class BillApi {
 
     private final BillService billService;
@@ -37,7 +39,7 @@ public class BillApi {
         return ResponseEntity.ok(bill);
     }
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<Bill>> getAllBills() {
         List<Bill> bills = billService.getAllBills();
         return ResponseEntity.ok(bills);

@@ -3,6 +3,7 @@ package com.brhn.xpnsr.apis;
 import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.models.Category;
 import com.brhn.xpnsr.services.CategoryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/categories")
+@Tag(name = "Category API", description = "The api for managing all categories of XPNSR")
+@RequestMapping("/api/categories")
 public class CategoryApi {
 
     private final CategoryService categoryService;
@@ -38,7 +40,7 @@ public class CategoryApi {
         return ResponseEntity.ok(category);
     }
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<Category>> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
         return ResponseEntity.ok().body(categories);

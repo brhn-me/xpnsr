@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/budgets")
+@Tag(name = "Budget API", description = "The api for managing all budgets of XPNSR")
+@RequestMapping("/api/budgets")
 public class BudgetApi {
 
     private final BudgetService budgetService;
@@ -38,7 +39,7 @@ public class BudgetApi {
         return ResponseEntity.ok(budget);
     }
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<Budget>> getAllBudgets() {
         List<Budget> budgets = budgetService.getAllBudgets();
         return ResponseEntity.ok().body(budgets);

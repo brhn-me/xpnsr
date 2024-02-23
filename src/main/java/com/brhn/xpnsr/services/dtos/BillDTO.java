@@ -1,6 +1,7 @@
 package com.brhn.xpnsr.services.dtos;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.io.Serial;
@@ -12,15 +13,15 @@ public class BillDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 101L;
     private Long id;
-    @NotNull(message = "Tenure cannot be null")
+    @NotNull(message = "Tenure is required")
     @Min(value = 0, message = "Tenure must be a positive integer")
     private Integer tenure;
 
-    @NotNull(message = "Amount cannot be null")
+    @NotNull(message = "Amount is required")
     @Min(value = 0, message = "Amount must be greater than or equal to 0")
     private BigDecimal amount;
 
-    @NotNull(message = "Category cannot be null")
+    @NotBlank(message = "Category is required")
     private String categoryId;
 
     public Long getId() {

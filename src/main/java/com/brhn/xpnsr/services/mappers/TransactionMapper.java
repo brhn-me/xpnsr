@@ -1,19 +1,33 @@
 package com.brhn.xpnsr.services.mappers;
 
+import com.brhn.xpnsr.models.Category;
+import com.brhn.xpnsr.repositories.CategoryRepository;
 import com.brhn.xpnsr.services.dtos.TransactionDTO;
 import com.brhn.xpnsr.models.Transaction;
-import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+import java.util.Optional;
+
+@Mapper(componentModel = "spring", uses = {CategoryRepository.class})
 public interface TransactionMapper {
 
-    // @Mapping(source = "createdBy", target = "createdBy") // sample: skip mapping if names are identical
-    // @Mapping(source = "lastModifiedBy", target = "lastModifiedBy")
-    TransactionDTO userToUserDTO(Transaction transaction);
+    @Mapping(target = "primaryCategory", ignore = true)
+    @Mapping(target = "secondaryCategory", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    Transaction transactionDTOToTransaction(TransactionDTO transactionDTO);
 
-    // @Mapping(source = "createdBy", target = "createdBy") // sample: skip mapping if names are identical
-    // @Mapping(source = "lastModifiedBy", target = "lastModifiedBy")
-    TransactionDTO transactionDTOTTransaction(TransactionDTO transactionDTO);
+    @Mapping(source = "primaryCategory.id", target = "primaryCategoryId")
+    @Mapping(source = "secondaryCategory.id", target = "secondaryCategoryId")
+    TransactionDTO transactionToTransactionDTO(Transaction transaction);
+
+    @AfterMapping
+    default void mapCategoryIdsToCategories(TransactionDTO dto, @MappingTarget Transaction entity,
+                                            @Context CategoryRepository categoryRepository) {
+        Optional<Category> primaryCategory = categoryRepository.findById(dto.getPrimaryCategoryId());
+        primaryCategory.ifPresent(entity::setPrimaryCategory);
+
+        Optional<Category> secondaryCategory = categoryRepository.findById(dto.getSecondaryCategoryId());
+        secondaryCategory.ifPresent(entity::setSecondaryCategory);
+    }
 }

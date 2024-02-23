@@ -28,35 +28,49 @@ public class CategoryApi {
         this.categoryService = categoryService;
     }
 
-    @Operation(summary = "Add a new category", responses = {@ApiResponse(description = "Category added successfully", responseCode = "200", content = @Content(schema = @Schema(implementation = CategoryDTO.class))), @ApiResponse(description = "Bad Request", responseCode = "400")})
+    @Operation(summary = "Add a new category", responses = {
+            @ApiResponse(description = "Category added successfully",
+                    responseCode = "200", content = @Content(schema = @Schema(implementation = CategoryDTO.class))),
+            @ApiResponse(description = "Bad Request", responseCode = "400")})
     @PostMapping
     public ResponseEntity<CategoryDTO> add(@RequestBody CategoryDTO c) throws BadRequestError {
         CategoryDTO category = categoryService.add(c);
         return ResponseEntity.ok(category);
     }
 
-    @Operation(summary = "Update an existing category", responses = {@ApiResponse(description = "Category updated successfully", responseCode = "200", content = @Content(schema = @Schema(implementation = CategoryDTO.class))), @ApiResponse(description = "Category not found", responseCode = "404"), @ApiResponse(description = "Parent category not found", responseCode = "400")})
+    @Operation(summary = "Update an existing category", responses = {
+            @ApiResponse(description = "Category updated successfully",
+                    responseCode = "200", content = @Content(schema = @Schema(implementation = CategoryDTO.class))),
+            @ApiResponse(description = "Category not found", responseCode = "404"),
+            @ApiResponse(description = "Parent category not found", responseCode = "400")})
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDTO> update(@PathVariable String id, @RequestBody CategoryDTO c) throws NotFoundError, BadRequestError {
         CategoryDTO categoryDTO = categoryService.update(id, c);
         return ResponseEntity.ok(categoryDTO);
     }
 
-    @Operation(summary = "Get a category by ID", responses = {@ApiResponse(description = "Category found", responseCode = "200", content = @Content(schema = @Schema(implementation = CategoryDTO.class))), @ApiResponse(description = "Category not found", responseCode = "404")})
+    @Operation(summary = "Get a category by ID", responses = {
+            @ApiResponse(description = "Category found", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = CategoryDTO.class))),
+            @ApiResponse(description = "Category not found", responseCode = "404")})
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable String id) throws NotFoundError {
         CategoryDTO categoryDTO = categoryService.getCategoryById(id);
         return ResponseEntity.ok(categoryDTO);
     }
 
-    @Operation(summary = "Get all categories", responses = {@ApiResponse(description = "List of categories", responseCode = "200", content = @Content(schema = @Schema(implementation = List.class)))})
+    @Operation(summary = "Get all categories", responses = {
+            @ApiResponse(description = "List of categories", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = Page.class)))})
     @GetMapping("/")
     public ResponseEntity<Page<CategoryDTO>> getAllCategories(@ParameterObject Pageable pageable) {
         Page<CategoryDTO> categories = categoryService.list(pageable);
         return ResponseEntity.ok().body(categories);
     }
 
-    @Operation(summary = "Delete a category by ID", responses = {@ApiResponse(description = "Category deleted successfully", responseCode = "204"), @ApiResponse(description = "Category not found", responseCode = "404")})
+    @Operation(summary = "Delete a category by ID", responses = {
+            @ApiResponse(description = "Category deleted successfully", responseCode = "204"),
+            @ApiResponse(description = "Category not found", responseCode = "404")})
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) throws NotFoundError {
         categoryService.delete(id);

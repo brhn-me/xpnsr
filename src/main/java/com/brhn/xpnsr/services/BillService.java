@@ -2,45 +2,51 @@ package com.brhn.xpnsr.services;
 
 import com.brhn.xpnsr.models.Bill;
 import com.brhn.xpnsr.repositories.BillRepository;
+import com.brhn.xpnsr.services.dtos.BillDTO;
+import com.brhn.xpnsr.services.mappers.BillMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class BillService {
 
     private final BillRepository billRepository;
+    private final BillMapper billMapper;
 
     @Autowired
-    public BillService(BillRepository billRepository) {
+    public BillService(BillRepository billRepository, BillMapper billMapper) {
         this.billRepository = billRepository;
+        this.billMapper = billMapper;
     }
 
-    public Bill createBill(Bill bill) {
-        return billRepository.save(bill);
+    public BillDTO createBill(BillDTO b) {
+        Bill bill = billMapper.billDTOToBill(b);
+        bill = billRepository.save(bill);
+        return billMapper.billToBillDTO(bill);
     }
 
-    public Bill updateBill(Long id, Bill billDetails) {
-        Bill bill = billRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
-        bill.setTenure(billDetails.getTenure());
-        bill.setAmount(billDetails.getAmount());
-        return billRepository.save(bill);
+    public BillDTO updateBill(Long id, BillDTO b) {
+        Bill bill = billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+        bill = billMapper.billDTOToBill(b);
+        bill.setId(id);
+        bill = billRepository.save(bill);
+        return billMapper.billToBillDTO(bill);
     }
 
-    public Bill getBillById(Long id) {
-        return billRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+    public BillDTO getBillById(Long id) {
+        Bill bill = billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+        return billMapper.billToBillDTO(bill);
     }
 
-    public List<Bill> getAllBills() {
-        return billRepository.findAll();
+    public Page<BillDTO> getAllBills(Pageable pageable) {
+        Page<Bill> bills = billRepository.findAll(pageable);
+        return bills.map(billMapper::billToBillDTO);
     }
 
     public void deleteBill(Long id) {
-        Bill bill = billRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+        Bill bill = billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
         billRepository.delete(bill);
     }
 }

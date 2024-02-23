@@ -8,6 +8,10 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
-        return GroupedOpenApi.builder().group("spring").packagesToScan("com.brhn.xpnsr.apis").build();
+        return GroupedOpenApi
+                .builder()
+                .group("Version 1")
+                .pathsToMatch("/api/**")
+                .build();
     }
 }

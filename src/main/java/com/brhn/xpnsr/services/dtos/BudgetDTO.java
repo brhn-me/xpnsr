@@ -31,7 +31,7 @@ public class BudgetDTO implements Serializable {
     private String currency;
 
     @NotNull(message = "Category is required")
-    private Long categoryId;
+    private String categoryId;
 
     @NotNull(message = "User is required")
     private Long userId;
@@ -76,11 +76,11 @@ public class BudgetDTO implements Serializable {
         this.currency = currency;
     }
 
-    public Long getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(Long categoryId) {
+    public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
 

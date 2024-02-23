@@ -49,6 +49,12 @@ public class TransactionDTO implements Serializable {
     private String tags;
 
 
+    @NotNull(message = "Primary category is required")
+    private String primaryCategoryId;
+
+    private String secondaryCategoryId;
+
+
     public Long getId() {
         return id;
     }
@@ -137,6 +143,22 @@ public class TransactionDTO implements Serializable {
         this.tags = tags;
     }
 
+    public String getPrimaryCategoryId() {
+        return primaryCategoryId;
+    }
+
+    public void setPrimaryCategoryId(String primaryCategoryId) {
+        this.primaryCategoryId = primaryCategoryId;
+    }
+
+    public String getSecondaryCategoryId() {
+        return secondaryCategoryId;
+    }
+
+    public void setSecondaryCategoryId(String secondaryCategoryId) {
+        this.secondaryCategoryId = secondaryCategoryId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -164,6 +186,8 @@ public class TransactionDTO implements Serializable {
                 ", country='" + country + '\'' +
                 ", description='" + description + '\'' +
                 ", tags='" + tags + '\'' +
+                ", primaryCategoryId='" + primaryCategoryId + '\'' +
+                ", secondaryCategoryId='" + secondaryCategoryId + '\'' +
                 '}';
     }
 }

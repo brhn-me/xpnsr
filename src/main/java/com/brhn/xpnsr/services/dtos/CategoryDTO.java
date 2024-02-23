@@ -1,5 +1,6 @@
 package com.brhn.xpnsr.services.dtos;
 
+import com.brhn.xpnsr.models.TransactionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,6 +18,9 @@ public class CategoryDTO implements Serializable {
     @NotBlank(message = "Name is required")
     @Size(min = 1, max = 100, message = "Name must be between 1 and 100 characters")
     private String name;
+
+    @NotNull(message = "Transaction type is required")
+    private TransactionType type;
 
     @Size(max = 50, message = "Icon reference must be up to 50 characters")
     private String icon;
@@ -42,6 +46,14 @@ public class CategoryDTO implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public TransactionType getType() {
+        return type;
+    }
+
+    public void setType(TransactionType type) {
+        this.type = type;
     }
 
     public String getIcon() {
@@ -86,6 +98,7 @@ public class CategoryDTO implements Serializable {
         return "CategoryDTO{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", type=" + type +
                 ", icon='" + icon + '\'' +
                 ", description='" + description + '\'' +
                 ", parentId='" + parentId + '\'' +

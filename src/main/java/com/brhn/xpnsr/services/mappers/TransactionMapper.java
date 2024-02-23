@@ -3,12 +3,11 @@ package com.brhn.xpnsr.services.mappers;
 import com.brhn.xpnsr.services.dtos.TransactionDTO;
 import com.brhn.xpnsr.models.Transaction;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TransactionMapper {
-
-    TransactionMapper INSTANCE = Mappers.getMapper(TransactionMapper.class);
 
     // @Mapping(source = "createdBy", target = "createdBy") // sample: skip mapping if names are identical
     // @Mapping(source = "lastModifiedBy", target = "lastModifiedBy")

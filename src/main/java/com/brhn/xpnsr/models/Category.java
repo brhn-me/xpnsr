@@ -23,6 +23,11 @@ public class Category implements Serializable {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @NotNull(message = "Transaction type cannot be null")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 10)
+    private TransactionType type;
+
     @Size(max = 50, message = "Icon reference must be up to 50 characters")
     @Column(length = 50)
     private String icon;
@@ -49,6 +54,14 @@ public class Category implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public TransactionType getType() {
+        return type;
+    }
+
+    public void setType(TransactionType type) {
+        this.type = type;
     }
 
     public String getIcon() {
@@ -93,9 +106,10 @@ public class Category implements Serializable {
         return "Category{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", type=" + type +
                 ", icon='" + icon + '\'' +
                 ", description='" + description + '\'' +
-                ", parentId=" + parentId +
+                ", parentId='" + parentId + '\'' +
                 '}';
     }
 }

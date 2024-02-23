@@ -9,8 +9,6 @@ import org.mapstruct.factory.Mappers;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-
     // @Mapping(source = "createdBy", target = "createdBy") // sample: skip mapping if names are identical
     // @Mapping(source = "lastModifiedBy", target = "lastModifiedBy")
     UserDTO userToUserDTO(User user);

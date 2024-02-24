@@ -28,8 +28,8 @@ public class BillService {
     }
 
     public BillDTO updateBill(Long id, BillDTO b) {
-        Bill bill = billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
-        bill = billMapper.billDTOToBill(b);
+        billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+        Bill bill = billMapper.billDTOToBill(b);
         bill.setId(id);
         bill = billRepository.save(bill);
         return billMapper.billToBillDTO(bill);

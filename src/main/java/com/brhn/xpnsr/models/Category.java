@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -12,6 +13,7 @@ import java.util.Objects;
 @Table(name = "categories")
 public class Category implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 3L;
 
     @jakarta.persistence.Id

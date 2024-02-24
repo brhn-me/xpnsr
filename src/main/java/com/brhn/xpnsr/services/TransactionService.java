@@ -10,8 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class TransactionService {
 
@@ -34,10 +32,10 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found with id " + id));
 
-        Transaction updatedTransaction = transactionMapper.transactionDTOToTransaction(transactionDTO);
-        updatedTransaction.setId(id);
-        updatedTransaction = transactionRepository.save(updatedTransaction);
-        return transactionMapper.transactionToTransactionDTO(updatedTransaction);
+        transaction = transactionMapper.transactionDTOToTransaction(transactionDTO);
+        transaction.setId(id);
+        transaction = transactionRepository.save(transaction);
+        return transactionMapper.transactionToTransactionDTO(transaction);
     }
 
     public TransactionDTO get(Long id) throws NotFoundError {

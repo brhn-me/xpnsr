@@ -12,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -41,9 +40,7 @@ public class CategoryService {
         // check parent category
         if (StringUtils.isNotEmpty(parentId)) {
             Optional<Category> parentCategory = categoryRepository.findById(parentId);
-            if (parentCategory.isEmpty()) {
-                return false;
-            }
+            return parentCategory.isPresent();
         }
         return true;
     }
@@ -51,8 +48,8 @@ public class CategoryService {
     /**
      * Generate category id from the category name
      *
-     * @param name
-     * @return
+     * @param name Name field value of the category
+     * @return id lowercased and underscored version of name as id
      */
     public static String generateCategoryId(String name) {
         String id = name.trim() // Remove leading and trailing whitespace
@@ -83,8 +80,7 @@ public class CategoryService {
 
     public Page<CategoryDTO> list(Pageable pageable) {
         Page<Category> categories = categoryRepository.findAll(pageable);
-        Page<CategoryDTO> categoriesDTO = categories.map(categoryMapper::categoryToCategoryDTO);
-        return categoriesDTO;
+        return categories.map(categoryMapper::categoryToCategoryDTO);
     }
 
     public void delete(String id) throws NotFoundError {

@@ -1,11 +1,10 @@
 package com.brhn.xpnsr.services.mappers;
 
 import com.brhn.xpnsr.models.Category;
+import com.brhn.xpnsr.models.Transaction;
 import com.brhn.xpnsr.repositories.CategoryRepository;
 import com.brhn.xpnsr.services.dtos.TransactionDTO;
-import com.brhn.xpnsr.models.Transaction;
 import org.mapstruct.*;
-import org.mapstruct.factory.Mappers;
 
 import java.util.Optional;
 

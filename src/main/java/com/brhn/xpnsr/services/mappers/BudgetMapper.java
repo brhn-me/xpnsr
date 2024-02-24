@@ -1,6 +1,5 @@
 package com.brhn.xpnsr.services.mappers;
 
-import com.brhn.xpnsr.exceptions.BadRequestError;
 import com.brhn.xpnsr.models.Budget;
 import com.brhn.xpnsr.models.Category;
 import com.brhn.xpnsr.repositories.CategoryRepository;

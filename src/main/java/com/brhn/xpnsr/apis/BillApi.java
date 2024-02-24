@@ -15,8 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @Tag(name = "Bill API", description = "The api for managing all bills of XPNSR")
 @RequestMapping("/api/bills")

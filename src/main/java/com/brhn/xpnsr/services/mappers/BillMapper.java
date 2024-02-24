@@ -1,11 +1,9 @@
 package com.brhn.xpnsr.services.mappers;
 
 import com.brhn.xpnsr.models.Bill;
-import com.brhn.xpnsr.models.Budget;
 import com.brhn.xpnsr.models.Category;
 import com.brhn.xpnsr.repositories.CategoryRepository;
 import com.brhn.xpnsr.services.dtos.BillDTO;
-import com.brhn.xpnsr.services.dtos.BudgetDTO;
 import org.mapstruct.*;
 
 import java.util.Optional;

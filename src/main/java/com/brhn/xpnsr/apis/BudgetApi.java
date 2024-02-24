@@ -1,7 +1,6 @@
 package com.brhn.xpnsr.apis;
 
 import com.brhn.xpnsr.exceptions.NotFoundError;
-import com.brhn.xpnsr.models.Budget;
 import com.brhn.xpnsr.services.BudgetService;
 import com.brhn.xpnsr.services.dtos.BudgetDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,8 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @Tag(name = "Budget API", description = "The api for managing all budgets of XPNSR")

@@ -1,4 +1,4 @@
-XPNSR API
+#XPNSR API
 
 This project is a RESTful API developed with Spring Boot, designed to manage financial records including bills, budgets, transactions, and user accounts. It leverages Spring Data JPA for database interactions, Spring Data REST for exposing repository content over HTTP, and Spring Security for authentication and authorization, although the latter is commented out in this initial setup.
 

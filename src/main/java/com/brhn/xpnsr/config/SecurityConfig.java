@@ -57,7 +57,14 @@ public class SecurityConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .info(new Info().title("API Title").version("API Version").description("API Description"))
+                .info(new Info().title("XPNSR API")
+                        .version("Version: 1")
+                        .description("API Description\n\n" +
+                                "**API Authentication**\n" +
+                                "All requests to the API endpoints under `/api/` require authentication via an API key. " +
+                                "You must include this API key in the request header as follows:\n\n" +
+                                "- **Header Name**: `XPNSR-API-KEY`\n" +
+                                "- **Sample API Key for Testing**: `c779c66a194f4ddfbc22a9e2dacb5835`"))
                 .addSecurityItem(new SecurityRequirement().addList("api_key"))
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes("api_key", new SecurityScheme()

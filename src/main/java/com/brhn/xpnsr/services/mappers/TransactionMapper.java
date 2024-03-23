@@ -1,10 +1,14 @@
 package com.brhn.xpnsr.services.mappers;
 
+import com.brhn.xpnsr.apis.CategoryApi;
+import com.brhn.xpnsr.apis.TransactionApi;
 import com.brhn.xpnsr.models.Category;
 import com.brhn.xpnsr.models.Transaction;
 import com.brhn.xpnsr.repositories.CategoryRepository;
+import com.brhn.xpnsr.services.dtos.CategoryDTO;
 import com.brhn.xpnsr.services.dtos.TransactionDTO;
 import org.mapstruct.*;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 
 import java.util.Optional;
 

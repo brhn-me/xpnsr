@@ -4,12 +4,13 @@ import com.brhn.xpnsr.models.TransactionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class CategoryDTO implements Serializable {
+public class CategoryDTO extends RepresentationModel<CategoryDTO>  implements Serializable {
     @Serial
     private static final long serialVersionUID = 103L;
 
@@ -95,13 +96,6 @@ public class CategoryDTO implements Serializable {
 
     @Override
     public String toString() {
-        return "CategoryDTO{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", type=" + type +
-                ", icon='" + icon + '\'' +
-                ", description='" + description + '\'' +
-                ", parentId='" + parentId + '\'' +
-                '}';
+        return "CategoryDTO{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", type=" + type + ", icon='" + icon + '\'' + ", description='" + description + '\'' + ", parentId='" + parentId + '\'' + '}';
     }
 }

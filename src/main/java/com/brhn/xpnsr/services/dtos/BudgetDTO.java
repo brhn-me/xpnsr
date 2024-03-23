@@ -4,13 +4,14 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class BudgetDTO implements Serializable {
+public class BudgetDTO extends RepresentationModel<BudgetDTO> implements Serializable {
     @Serial
     private static final long serialVersionUID = 102L;
     private Long id;

@@ -42,6 +42,10 @@ public class BillService {
         billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
         Bill bill = billMapper.billDTOToBill(b);
         bill.setId(id);
+        String username = AuthenticationProvider.getCurrentUsername();
+        User user = userRepository.findByEmail("sample.user@example.com")
+                .orElseThrow(() -> new NotFoundError("User not found with username: " + username));
+        bill.setUser(user);
         bill = billRepository.save(bill);
         return billMapper.billToBillDTO(bill);
     }

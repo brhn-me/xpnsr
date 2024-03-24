@@ -93,8 +93,8 @@ public class BillApi {
         Page<BillDTO> billsPage = billService.getAllBills(pageable);
         Page<EntityModel<BillDTO>> entityModelsPage = billsPage.map(billDTO ->
                 EntityModel.of(billDTO,
-                        linkTo(methodOn(BillApi.class).getBillById(billDTO.getId())).withRel("bill"),
-                        linkTo(methodOn(BillApi.class).getAllBills(pageable)).withSelfRel()
+                        linkTo(methodOn(BillApi.class).getBillById(billDTO.getId())).withSelfRel(),
+                        linkTo(methodOn(BillApi.class).getAllBills(pageable)).withRel("bills")
                 )
         );
 

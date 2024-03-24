@@ -2,13 +2,42 @@ package com.brhn.xpnsr.services.mappers;
 
 import com.brhn.xpnsr.models.Category;
 import com.brhn.xpnsr.services.dtos.CategoryDTO;
-import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface CategoryMapper {
+@Component
+public class CategoryMapper {
 
-    CategoryDTO categoryToCategoryDTO(Category category);
+    public CategoryDTO categoryToCategoryDTO(Category category) {
+        if (category == null) {
+            return null;
+        }
 
-    Category categoryDTOToCategory(CategoryDTO categoryDTO);
+        CategoryDTO categoryDTO = new CategoryDTO();
+
+        categoryDTO.setId(category.getId());
+        categoryDTO.setName(category.getName());
+        categoryDTO.setType(category.getType());
+        categoryDTO.setIcon(category.getIcon());
+        categoryDTO.setDescription(category.getDescription());
+        categoryDTO.setParentId(category.getParentId());
+
+        return categoryDTO;
+    }
+
+    public Category categoryDTOToCategory(CategoryDTO categoryDTO) {
+        if (categoryDTO == null) {
+            return null;
+        }
+
+        Category category = new Category();
+
+        category.setId(categoryDTO.getId());
+        category.setName(categoryDTO.getName());
+        category.setType(categoryDTO.getType());
+        category.setIcon(categoryDTO.getIcon());
+        category.setDescription(categoryDTO.getDescription());
+        category.setParentId(categoryDTO.getParentId());
+
+        return category;
+    }
 }

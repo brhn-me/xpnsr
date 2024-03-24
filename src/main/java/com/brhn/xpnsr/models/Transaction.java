@@ -68,7 +68,7 @@ public class Transaction {
 
     @NotNull(message = "Secondary category cannot be null")
     @ManyToOne
-    @JoinColumn(name = "secondary_category_id", nullable = false)
+    @JoinColumn(name = "secondary_category_id")
     private Category secondaryCategory;
 
     @NotNull(message = "User cannot be null")

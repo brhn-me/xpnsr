@@ -2,7 +2,10 @@ package com.brhn.xpnsr.services;
 
 import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.models.Budget;
+import com.brhn.xpnsr.models.User;
 import com.brhn.xpnsr.repositories.BudgetRepository;
+import com.brhn.xpnsr.repositories.UserRepository;
+import com.brhn.xpnsr.security.AuthenticationProvider;
 import com.brhn.xpnsr.services.dtos.BudgetDTO;
 import com.brhn.xpnsr.services.mappers.BudgetMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +17,25 @@ import org.springframework.stereotype.Service;
 public class BudgetService {
 
     private final BudgetRepository budgetRepository;
+
+    private final UserRepository userRepository;
     private final BudgetMapper budgetMapper;
 
     @Autowired
-    public BudgetService(BudgetRepository budgetRepository, BudgetMapper budgetMapper) {
+    public BudgetService(BudgetRepository budgetRepository, UserRepository userRepository, BudgetMapper budgetMapper) {
         this.budgetRepository = budgetRepository;
+        this.userRepository = userRepository;
         this.budgetMapper = budgetMapper;
     }
 
     public BudgetDTO add(BudgetDTO b) {
         Budget budget = budgetMapper.budgetDTOToBudget(b);
+
+        String username = AuthenticationProvider.getCurrentUsername();
+        User user = userRepository.findByEmail("sample.user@example.com")
+                .orElseThrow(() -> new NotFoundError("User not found with username: " + username));
+        budget.setUser(user);
+
         budget = budgetRepository.save(budget);
         return budgetMapper.budgetToBudgetDTO(budget);
     }

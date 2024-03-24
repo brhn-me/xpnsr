@@ -1,0 +1,20 @@
+// {type:class}
+// {direction:topDown}
+// visualize: https://yuml.me/diagram/scruffy/class/draw
+
+
+[Budget|+id: bigint;+amount: decimal;currency: varchar;title: varchar;+category_id: varchar;description: varchar|_links: self, category]->[Category]
+
+[Category|+id: varchar;icon: varchar;+name: varchar;description: varchar;parent_id: varchar|_links: self, parentCategory]-^[Category]
+
+[Transaction|+id: bigint;+amount: decimal;due: decimal;+date: datetime;currency: varchar;city: varchar;country: varchar;title: varchar;description: varchar;+primary_category_id: varchar;+secondary_category_id: varchar;+type: enum|_links: self, primaryCategory, secondaryCategory]->[Category]
+
+[User|+id: bigint;+activated: bit;+created_date: datetime;last_modified_date: datetime;created_by: varchar;first_name: varchar;last_modified_by: varchar;last_name: varchar;+login: varchar;+password_hash: varchar;email: varchar|_links: self, bills, budgets, transactions]
+
+[Bill|+id: bigint;+amount: decimal;+tenure: int;+user_id: bigint;+category_id: varchar|_links: self, user, category]->[User]
+[Bill]->[Category]
+
+
+[User]->[Bill]
+[User]->[Budget]
+[User]->[Transaction]

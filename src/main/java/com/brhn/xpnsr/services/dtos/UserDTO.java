@@ -3,6 +3,7 @@ package com.brhn.xpnsr.services.dtos;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -83,12 +84,6 @@ public class UserDTO implements Serializable {
 
     @Override
     public String toString() {
-        return "UserDTO{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", activated=" + activated +
-                '}';
+        return "UserDTO{" + "id=" + id + ", firstName='" + firstName + '\'' + ", lastName='" + lastName + '\'' + ", email='" + email + '\'' + ", activated=" + activated + '}';
     }
 }

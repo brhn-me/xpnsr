@@ -2,6 +2,7 @@ package com.brhn.xpnsr.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -13,6 +14,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBaseApiExceptions(BaseError ex, WebRequest request) {
         ErrorResponse er = new ErrorResponse(ex.getStatus().value(), ex.getMessage());
         return new ResponseEntity<>(er, ex.getStatus());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErrorResponse er = new ErrorResponse(status.value(), ex.getMessage());
+        return new ResponseEntity<>(er, status);
     }
 
     @ExceptionHandler(RuntimeException.class)

@@ -36,7 +36,7 @@ public class TransactionApi {
     @PostMapping
     public ResponseEntity<EntityModel<TransactionDTO>> add(@RequestBody TransactionDTO t) {
         TransactionDTO transactionDTO = transactionService.add(t);
-        EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO, linkTo(methodOn(TransactionApi.class).get(transactionDTO.getId())).withSelfRel());
+        EntityModel<TransactionDTO> entityModel = getWithHyperMediaLinks(transactionDTO);
 
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
@@ -45,7 +45,7 @@ public class TransactionApi {
     @PutMapping("/{id}")
     public ResponseEntity<EntityModel<TransactionDTO>> update(@PathVariable Long id, @RequestBody TransactionDTO t) {
         TransactionDTO transactionDTO = transactionService.update(id, t);
-        EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO, linkTo(methodOn(TransactionApi.class).get(id)).withSelfRel(), linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel("all-transactions"));
+        EntityModel<TransactionDTO> entityModel = getWithHyperMediaLinks(transactionDTO);
 
         return ResponseEntity.ok(entityModel);
     }
@@ -54,7 +54,7 @@ public class TransactionApi {
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<TransactionDTO>> get(@PathVariable Long id) throws NotFoundError {
         TransactionDTO transactionDTO = transactionService.get(id);
-        EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO, linkTo(methodOn(TransactionApi.class).get(id)).withSelfRel(), linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel("all-transactions"));
+        EntityModel<TransactionDTO> entityModel = getWithHyperMediaLinks(transactionDTO);
 
         return ResponseEntity.ok(entityModel);
     }
@@ -63,7 +63,7 @@ public class TransactionApi {
     @GetMapping("/")
     public ResponseEntity<Page<EntityModel<TransactionDTO>>> getAll(@ParameterObject Pageable pageable) {
         Page<TransactionDTO> transactions = transactionService.getAll(pageable);
-        Page<EntityModel<TransactionDTO>> page = transactions.map(transactionDTO -> EntityModel.of(transactionDTO, linkTo(methodOn(TransactionApi.class).get(transactionDTO.getId())).withRel("transaction"), linkTo(methodOn(TransactionApi.class).getAll(pageable)).withSelfRel()));
+        Page<EntityModel<TransactionDTO>> page = transactions.map(this::getWithHyperMediaLinks);
 
         return ResponseEntity.ok(page);
     }
@@ -73,5 +73,24 @@ public class TransactionApi {
     public ResponseEntity<Void> delete(@PathVariable Long id) throws NotFoundError {
         transactionService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private EntityModel<TransactionDTO> getWithHyperMediaLinks(TransactionDTO transactionDTO) {
+        EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO);
+
+        // Self link
+        entityModel.add(linkTo(methodOn(TransactionApi.class).get(transactionDTO.getId())).withSelfRel());
+
+        if (transactionDTO.getPrimaryCategoryId() != null) {
+            entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(transactionDTO.getPrimaryCategoryId())).withRel(
+                    "primaryCategory"));
+        }
+        if (transactionDTO.getSecondaryCategoryId() != null) {
+            entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(transactionDTO.getSecondaryCategoryId())).withRel(
+                    "secondaryCategory"));
+        }
+        entityModel.add(linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel("all-transactions"));
+
+        return entityModel;
     }
 }

@@ -82,6 +82,10 @@ public class TransactionService {
 
         transaction = transactionMapper.transactionDTOToTransaction(transactionDTO);
         transaction.setId(id);
+        String username = AuthenticationProvider.getCurrentUsername();
+        User user = userRepository.findByEmail("sample.user@example.com")
+                .orElseThrow(() -> new NotFoundError("User not found with username: " + username));
+        transaction.setUser(user);
         updatePrimaryAndSecondaryCategoryFromDTO(transaction, transactionDTO);
         transaction = transactionRepository.save(transaction);
         return transactionMapper.transactionToTransactionDTO(transaction);

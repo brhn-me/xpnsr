@@ -45,6 +45,10 @@ public class BudgetService {
                 .orElseThrow(() -> new RuntimeException("Budget not found with id " + id));
         budget = budgetMapper.budgetDTOToBudget(b);
         budget.setId(id);
+        String username = AuthenticationProvider.getCurrentUsername();
+        User user = userRepository.findByEmail("sample.user@example.com")
+                .orElseThrow(() -> new NotFoundError("User not found with username: " + username));
+        budget.setUser(user);
         budget = budgetRepository.save(budget);
         return budgetMapper.budgetToBudgetDTO(budget);
     }

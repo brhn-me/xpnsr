@@ -1,43 +1,65 @@
 package com.brhn.xpnsr.services.mappers;
 
-import com.brhn.xpnsr.apis.BillApi;
-import com.brhn.xpnsr.apis.BudgetApi;
-import com.brhn.xpnsr.exceptions.NotFoundError;
-import com.brhn.xpnsr.models.Bill;
 import com.brhn.xpnsr.models.Budget;
 import com.brhn.xpnsr.models.Category;
-import com.brhn.xpnsr.repositories.CategoryRepository;
-import com.brhn.xpnsr.services.dtos.BillDTO;
 import com.brhn.xpnsr.services.dtos.BudgetDTO;
-import org.mapstruct.*;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+@Component
+public class BudgetMapper {
 
-@Mapper(componentModel = "spring", uses = {CategoryRepository.class})
-public interface BudgetMapper {
-
-    @Mapping(source = "category.id", target = "categoryId")
-    @Mapping(target = "userId", ignore = true)
-    BudgetDTO budgetToBudgetDTO(Budget budget);
-
-    @Mapping(target = "category", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    Budget budgetDTOToBudget(BudgetDTO budgetDTO);
-
-    @AfterMapping
-    default void mapCategoryIdToCategory(BudgetDTO budgetDTO, @MappingTarget Budget budget,
-                                         @Context CategoryRepository categoryRepository) {
-        if (budgetDTO.getCategoryId() != null) {
-            Optional<Category> category = categoryRepository.findById(budgetDTO.getCategoryId());
-            category.ifPresent(budget::setCategory);
+    public BudgetDTO budgetToBudgetDTO(Budget budget) {
+        if (budget == null) {
+            return null;
         }
+
+        BudgetDTO budgetDTO = new BudgetDTO();
+
+        budgetDTO.setCategoryId(budgetCategoryId(budget));
+        budgetDTO.setId(budget.getId());
+        budgetDTO.setTitle(budget.getTitle());
+        budgetDTO.setDescription(budget.getDescription());
+        budgetDTO.setAmount(budget.getAmount());
+        budgetDTO.setCurrency(budget.getCurrency());
+
+        return budgetDTO;
     }
 
-    @AfterMapping
-    default void addHypermediaLinks(Budget budget, @MappingTarget BudgetDTO budgetDTO) {
-        budgetDTO.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(BudgetApi.class)
-                .getBudgetById(budget.getId())).withSelfRel());
+    public Budget budgetDTOToBudget(BudgetDTO budgetDTO) {
+        if (budgetDTO == null) {
+            return null;
+        }
+
+        Budget budget = new Budget();
+
+        budget.setId(budgetDTO.getId());
+        budget.setTitle(budgetDTO.getTitle());
+        budget.setDescription(budgetDTO.getDescription());
+        budget.setAmount(budgetDTO.getAmount());
+        budget.setCurrency(budgetDTO.getCurrency());
+
+        // set category
+        if (budgetDTO.getCategoryId() != null) {
+            Category category = new Category();
+            category.setId(budgetDTO.getCategoryId());
+            budget.setCategory(category);
+        }
+
+        return budget;
+    }
+
+    private String budgetCategoryId(Budget budget) {
+        if (budget == null) {
+            return null;
+        }
+        Category category = budget.getCategory();
+        if (category == null) {
+            return null;
+        }
+        String id = category.getId();
+        if (id == null) {
+            return null;
+        }
+        return id;
     }
 }
-

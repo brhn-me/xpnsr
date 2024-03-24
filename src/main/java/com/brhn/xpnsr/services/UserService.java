@@ -9,9 +9,10 @@ import com.brhn.xpnsr.services.mappers.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.sql.Timestamp;
 import java.util.Optional;
 
 @Service
@@ -19,12 +20,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Autowired
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserDTO add(UserDTO u) throws UserExistsError {
@@ -33,6 +36,10 @@ public class UserService {
             throw new UserExistsError("User with email already exists");
         }
         User user = userMapper.userDTOToUser(u);
+        user.setLogin(u.getEmail());
+        user.setPasswordHash(passwordEncoder.encode("123456"));
+        user.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+        user.setCreatedBy("system");
         userRepository.save(user);
         return userMapper.userToUserDTO(user);
     }
@@ -43,9 +50,9 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
 
         // check for new email
-        if (userRepository.findByEmail(u.getEmail()).isPresent()) {
-            throw new UserExistsError("Another user already exists with email: " + u.getEmail());
-        }
+//        if (userRepository.findByEmail(u.getEmail()).isPresent()) {
+//            throw new UserExistsError("Another user already exists with email: " + u.getEmail());
+//        }
 
         user.setFirstName(u.getFirstName());
         user.setLastName(u.getLastName());

@@ -9,6 +9,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -43,21 +46,21 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                 // stop filter chain for unauthorized /api/ requests
                 return;
             }
+            authenticateWithApiKey("sample_user", apiKey);
         }
         filterChain.doFilter(request, response);
     }
 
-//    private void authenticateWithApiKey(String apiKey) {
-//        // Creating a dummy authentication object - consider tailoring this to your needs
-//        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-//                "apiKeyUser", // Principal
-//                null, // Credentials
-//                AuthorityUtils.createAuthorityList("ROLE_API_USER") // Authorities
-//        );
-//
-//        // Setting the authentication in the SecurityContext
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//    }
+    private void authenticateWithApiKey(String username, String apiKey) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                username, // Principal, using the passed username
+                null, // Credentials, not using password for API key auth
+                AuthorityUtils.createAuthorityList("ROLE_API_USER") // Authorities
+        );
+
+        // Setting the authentication in the SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
     private boolean validateApiKey(String apiKey) {
         if (StringUtils.isBlank(apiKey)) {

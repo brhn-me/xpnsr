@@ -13,8 +13,13 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @Tag(name = "Budget API", description = "The api for managing all budgets of XPNSR")
@@ -35,9 +40,12 @@ public class BudgetApi {
                             content = @Content(schema = @Schema(implementation = BudgetDTO.class))),
                     @ApiResponse(responseCode = "400", description = "Invalid input")
             })
-    public ResponseEntity<BudgetDTO> add(@RequestBody BudgetDTO b) {
-        BudgetDTO budgetDTO = budgetService.add(b);
-        return ResponseEntity.ok(budgetDTO);
+    public ResponseEntity<EntityModel<BudgetDTO>> createBudget(@RequestBody BudgetDTO budgetDTO) {
+        BudgetDTO createdBudget = budgetService.add(budgetDTO);
+        EntityModel<BudgetDTO> entityModel = EntityModel.of(createdBudget,
+                linkTo(methodOn(BudgetApi.class).getBudgetById(createdBudget.getId())).withSelfRel());
+
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
 
     @PutMapping("/{id}")
@@ -48,9 +56,13 @@ public class BudgetApi {
                     @ApiResponse(responseCode = "404", description = "Budget not found"),
                     @ApiResponse(responseCode = "400", description = "Invalid input")
             })
-    public ResponseEntity<BudgetDTO> update(@PathVariable Long id, @RequestBody BudgetDTO b) {
-        BudgetDTO budgetDTO = budgetService.update(id, b);
-        return ResponseEntity.ok(budgetDTO);
+    public ResponseEntity<EntityModel<BudgetDTO>> updateBudget(@PathVariable Long id, @RequestBody BudgetDTO budgetDTO) {
+        BudgetDTO updatedBudget = budgetService.update(id, budgetDTO);
+        EntityModel<BudgetDTO> entityModel = EntityModel.of(updatedBudget,
+                linkTo(methodOn(BudgetApi.class).getBudgetById(updatedBudget.getId())).withSelfRel(),
+                linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel("all-budgets"));
+
+        return ResponseEntity.ok(entityModel);
     }
 
     @GetMapping("/{id}")
@@ -60,11 +72,13 @@ public class BudgetApi {
                             content = @Content(schema = @Schema(implementation = BudgetDTO.class))),
                     @ApiResponse(responseCode = "404", description = "Budget not found")
             })
-    public ResponseEntity<BudgetDTO> getBudgetById(
-            @Parameter(description = "ID of the budget to return")
-            @PathVariable Long id) throws NotFoundError {
+    public ResponseEntity<EntityModel<BudgetDTO>> getBudgetById(@PathVariable Long id) {
         BudgetDTO budgetDTO = budgetService.getBudgetById(id);
-        return ResponseEntity.ok(budgetDTO);
+        EntityModel<BudgetDTO> entityModel = EntityModel.of(budgetDTO,
+                linkTo(methodOn(BudgetApi.class).getBudgetById(id)).withSelfRel(),
+                linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel("all-budgets"));
+
+        return ResponseEntity.ok(entityModel);
     }
 
     @GetMapping("/")
@@ -73,9 +87,16 @@ public class BudgetApi {
                     @ApiResponse(responseCode = "200", description = "Success",
                             content = @Content(schema = @Schema(implementation = Page.class)))
             })
-    public ResponseEntity<Page<BudgetDTO>> getAllBudgets(@ParameterObject Pageable pageable) {
-        Page<BudgetDTO> budgets = budgetService.getAllBudgets(pageable);
-        return ResponseEntity.ok().body(budgets);
+    public ResponseEntity<Page<EntityModel<BudgetDTO>>> getAllBudgets(Pageable pageable) {
+        Page<BudgetDTO> budgetsPage = budgetService.getAllBudgets(pageable);
+        Page<EntityModel<BudgetDTO>> entityModelsPage = budgetsPage.map(budgetDTO ->
+                EntityModel.of(budgetDTO,
+                        linkTo(methodOn(BudgetApi.class).getBudgetById(budgetDTO.getId())).withRel("budget"),
+                        linkTo(methodOn(BudgetApi.class).getAllBudgets(pageable)).withSelfRel()
+                )
+        );
+
+        return ResponseEntity.ok(entityModelsPage);
     }
 
     @DeleteMapping("/{id}")

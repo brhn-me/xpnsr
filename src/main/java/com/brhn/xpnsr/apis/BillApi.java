@@ -12,8 +12,13 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @Tag(name = "Bill API", description = "The api for managing all bills of XPNSR")
@@ -34,9 +39,12 @@ public class BillApi {
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = BillDTO.class)))
             })
-    public ResponseEntity<BillDTO> createBill(@RequestBody BillDTO b) {
+    public ResponseEntity<EntityModel<BillDTO>> createBill(@RequestBody BillDTO b) {
         BillDTO billDTO = billService.createBill(b);
-        return ResponseEntity.ok(billDTO);
+        EntityModel<BillDTO> entityModel = EntityModel.of(billDTO,
+                linkTo(methodOn(BillApi.class).getBillById(billDTO.getId())).withSelfRel());
+
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
 
     @PutMapping("/{id}")
@@ -46,10 +54,15 @@ public class BillApi {
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = BillDTO.class)))
             })
-    public ResponseEntity<BillDTO> updateBill(@PathVariable @Parameter(description = "ID of the bill to be updated") Long id,
-                                              @RequestBody BillDTO bill) {
+    public ResponseEntity<EntityModel<BillDTO>> updateBill(@PathVariable @Parameter(description = "ID of the bill to be updated") Long id,
+                                                           @RequestBody BillDTO bill) {
         BillDTO updatedBill = billService.updateBill(id, bill);
-        return ResponseEntity.ok(updatedBill);
+
+        EntityModel<BillDTO> entityModel = EntityModel.of(updatedBill,
+                linkTo(methodOn(BillApi.class).getBillById(updatedBill.getId())).withSelfRel(),
+                linkTo(methodOn(BillApi.class).getAllBills(Pageable.unpaged())).withRel("all-bills"));
+
+        return ResponseEntity.ok(entityModel);
     }
 
     @GetMapping("/{id}")
@@ -59,9 +72,14 @@ public class BillApi {
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = BillDTO.class)))
             })
-    public ResponseEntity<BillDTO> getBillById(@PathVariable @Parameter(description = "ID of the bill to retrieve") Long id) {
-        BillDTO bill = billService.getBillById(id);
-        return ResponseEntity.ok(bill);
+    public ResponseEntity<EntityModel<BillDTO>> getBillById(@PathVariable Long id) {
+        BillDTO billDTO = billService.getBillById(id);
+
+        EntityModel<BillDTO> entityModel = EntityModel.of(billDTO,
+                linkTo(methodOn(BillApi.class).getBillById(id)).withSelfRel(),
+                linkTo(methodOn(BillApi.class).getAllBills(Pageable.unpaged())).withRel("all-bills"));
+
+        return ResponseEntity.ok(entityModel);
     }
 
     @GetMapping("/")
@@ -71,9 +89,16 @@ public class BillApi {
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = Page.class)))
             })
-    public ResponseEntity<Page<BillDTO>> getAllBills(@ParameterObject Pageable pageable) {
-        Page<BillDTO> bills = billService.getAllBills(pageable);
-        return ResponseEntity.ok(bills);
+    public ResponseEntity<Page<EntityModel<BillDTO>>> getAllBills(@ParameterObject Pageable pageable) {
+        Page<BillDTO> billsPage = billService.getAllBills(pageable);
+        Page<EntityModel<BillDTO>> entityModelsPage = billsPage.map(billDTO ->
+                EntityModel.of(billDTO,
+                        linkTo(methodOn(BillApi.class).getBillById(billDTO.getId())).withRel("bill"),
+                        linkTo(methodOn(BillApi.class).getAllBills(pageable)).withSelfRel()
+                )
+        );
+
+        return ResponseEntity.ok(entityModelsPage);
     }
 
     @DeleteMapping("/{id}")

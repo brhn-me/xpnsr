@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
 
-public class TransactionDTO extends RepresentationModel<TransactionDTO> implements Serializable {
+public class TransactionDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 104L;
     private Long id;

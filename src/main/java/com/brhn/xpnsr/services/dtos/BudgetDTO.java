@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class BudgetDTO extends RepresentationModel<BudgetDTO> implements Serializable {
+public class BudgetDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 102L;
     private Long id;

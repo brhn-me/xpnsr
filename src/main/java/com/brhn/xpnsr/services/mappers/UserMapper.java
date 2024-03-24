@@ -1,28 +1,41 @@
 package com.brhn.xpnsr.services.mappers;
 
-import com.brhn.xpnsr.apis.UserApi;
 import com.brhn.xpnsr.models.User;
 import com.brhn.xpnsr.services.dtos.UserDTO;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.ReportingPolicy;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface UserMapper {
+@Component
+public class UserMapper {
 
-    // @Mapping(source = "createdBy", target = "createdBy") // sample: skip mapping if names are identical
-    // @Mapping(source = "lastModifiedBy", target = "lastModifiedBy")
-    UserDTO userToUserDTO(User user);
+    public UserDTO userToUserDTO(User user) {
+        if (user == null) {
+            return null;
+        }
 
-    // @Mapping(source = "createdBy", target = "createdBy") // sample: skip mapping if names are identical
-    // @Mapping(source = "lastModifiedBy", target = "lastModifiedBy")
-    User userDTOToUser(UserDTO userDTO);
+        UserDTO userDTO = new UserDTO();
 
-    @AfterMapping
-    default void addHypermediaLinks(User user, @MappingTarget UserDTO userDTO) {
-        userDTO.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UserApi.class)
-                .getUserById(user.getId())).withSelfRel());
+        userDTO.setId(user.getId());
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setActivated(user.getActivated());
+
+        return userDTO;
+    }
+
+    public User userDTOToUser(UserDTO userDTO) {
+        if (userDTO == null) {
+            return null;
+        }
+
+        User user = new User();
+
+        user.setId(userDTO.getId());
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setEmail(userDTO.getEmail());
+        user.setActivated(userDTO.getActivated());
+
+        return user;
     }
 }

@@ -33,7 +33,6 @@ public class Application {
     public void setName(String name) {
         this.name = name;
     }
-
     public String getApiKey() {
         return apiKey;
     }

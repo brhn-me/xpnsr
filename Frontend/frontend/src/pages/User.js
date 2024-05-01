@@ -9,7 +9,7 @@ function User() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/users/?page=0&size=1', {
+            const response = await fetch('http://localhost:8080/api/users/?page=0&size=1', {
                 method: 'GET',
                 headers: {
                     'accept': 'application/json',
@@ -31,6 +31,7 @@ function User() {
     };
 
     useEffect(() => {
+        fetchUsers();
         // You could also call fetchusers here directly if you want to load users as soon as the component mounts
     }, []);
 
@@ -47,17 +48,14 @@ function User() {
 
     return (
         <div>
-            <button className="btn btn-primary my-3" onClick={fetchUsers}>Show All users</button>
+            {/*<button className="btn btn-primary my-3" onClick={fetchUsers}>Show All users</button>*/}
             {loading && <p>Loading...</p>}
             {!loading && (
                 <ul className="list-group">
                     {users.map((user, index) => (
                         <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
                             Name : {user.firstName} {user.lastName} - Email : {user.email}
-                            <div>
-                                <button className="btn btn-info btn-sm mr-2" onClick={() => handleEdit(user.id)}>Edit</button>
-                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(user.id)}>Delete</button>
-                            </div>
+
                         </li>
                     ))}
                 </ul>

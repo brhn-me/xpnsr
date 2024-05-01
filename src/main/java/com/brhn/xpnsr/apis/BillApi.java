@@ -19,18 +19,37 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.Bean;
+@CrossOrigin(origins = "*")
 @RestController
+
 @Tag(name = "Bill API", description = "The api for managing all bills of XPNSR")
 @RequestMapping("/api/bills")
+
 public class BillApi {
 
     private final BillService billService;
+
 
     @Autowired
     public BillApi(BillService billService) {
         this.billService = billService;
     }
+
+    // CORS Configuration
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("*")
+//                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
+//            }
+//        };
+//    }
 
     @PostMapping("/")
     @Operation(summary = "Create a new bill", description = "Adds a new bill to the system.",
@@ -111,3 +130,4 @@ public class BillApi {
         return ResponseEntity.noContent().build();
     }
 }
+

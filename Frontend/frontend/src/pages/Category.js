@@ -9,7 +9,7 @@ function Category() {
     const fetchCategorys = async () => {
         setLoading(true);
         try {
-            const response = await fetch('api/categories/?page=0&size=20', {
+            const response = await fetch('http://localhost:8080/api/categories/?page=0&size=20', {
                 method: 'GET',
                 headers: {
                     'accept': 'application/json',
@@ -31,6 +31,7 @@ function Category() {
     };
 
     useEffect(() => {
+        fetchCategorys();
         // You could also call fetchcategorys here directly if you want to load categorys as soon as the component mounts
     }, []);
 
@@ -47,17 +48,17 @@ function Category() {
 
     return (
         <div>
-            <button className="btn btn-primary my-3" onClick={fetchCategorys}>Show All Categorys</button>
+            {/*<button className="btn btn-primary my-3" onClick={fetchCategorys}>Show All Categorys</button>*/}
             {loading && <p>Loading...</p>}
             {!loading && (
                 <ul className="list-group">
                     {categorys.map((category, index) => (
                         <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
                             Name : {category.name} - Type : {category.type} - Icon : {category.icon} - Description : {category.description}
-                            <div>
-                                <button className="btn btn-info btn-sm mr-2" onClick={() => handleEdit(category.id)}>Edit</button>
-                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(category.id)}>Delete</button>
-                            </div>
+                            {/*<div>*/}
+                            {/*    <button className="btn btn-info btn-sm mr-2" onClick={() => handleEdit(category.id)}>Edit</button>*/}
+                            {/*    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(category.id)}>Delete</button>*/}
+                            {/*</div>*/}
                         </li>
                     ))}
                 </ul>

@@ -20,10 +20,14 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.Bean;
+@CrossOrigin(origins = "*")
 @RestController
 @Tag(name = "Budget API", description = "The api for managing all budgets of XPNSR")
 @RequestMapping("/api/budgets")
+
 public class BudgetApi {
 
     private final BudgetService budgetService;
@@ -32,8 +36,19 @@ public class BudgetApi {
     public BudgetApi(BudgetService budgetService) {
         this.budgetService = budgetService;
     }
-
-    @PostMapping
+//    // CORS Configuration
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("*")
+//                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
+//            }
+//        };
+//    }
+    @PostMapping("/")
     @Operation(summary = "Add a new budget", description = "Creates a new budget and returns the created budget details",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Budget created successfully",

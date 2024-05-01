@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -17,23 +18,43 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.Bean;
+@CrossOrigin(origins = "*")
 @RestController
 @Tag(name = "Transaction API", description = "The api for managing all transactions of XPNSR")
 @RequestMapping("/api/transactions")
+
 public class TransactionApi {
 
     private final TransactionService transactionService;
 
     @Autowired
+
+
     public TransactionApi(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
-
+//    // CORS Configuration
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("*")
+//                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
+//            }
+//        };
+//    }
     @Operation(summary = "Add a new transaction", responses = {@ApiResponse(responseCode = "200", description = "Transaction added successfully", content = @Content(schema = @Schema(implementation = TransactionDTO.class))), @ApiResponse(responseCode = "400", description = "Invalid transaction data provided")})
-    @PostMapping
+    @PostMapping("/")
+
+
     public ResponseEntity<EntityModel<TransactionDTO>> add(@RequestBody TransactionDTO t) {
         TransactionDTO transactionDTO = transactionService.add(t);
         EntityModel<TransactionDTO> entityModel = getWithHyperMediaLinks(transactionDTO);

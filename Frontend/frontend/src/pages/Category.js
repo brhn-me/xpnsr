@@ -1,11 +1,11 @@
-// src/pages/category.js
+
 import React, { useState, useEffect } from 'react';
 
 function Category() {
     const [categorys, setCategorys] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Function to fetch categorys from the API
+   
     const fetchCategorys = async () => {
         setLoading(true);
         try {
@@ -21,7 +21,7 @@ function Category() {
             }
             const data = await response.json();
 
-            // Assuming categorys are stored in the `content` property of the response
+            
             setCategorys(data.content);
         } catch (error) {
             console.error('There was an error fetching the categorys:', error);
@@ -32,18 +32,18 @@ function Category() {
 
     useEffect(() => {
         fetchCategorys();
-        // You could also call fetchcategorys here directly if you want to load categorys as soon as the component mounts
+        
     }, []);
 
-    // Placeholder functions for edit and delete actions
+   
     const handleEdit = (categoryId) => {
         console.log('Edit', categoryId);
-        // Implement your edit logic here
+      
     };
 
     const handleDelete = (categoryId) => {
         console.log('Delete', categoryId);
-        // Implement your delete logic here
+        
     };
 
     return (

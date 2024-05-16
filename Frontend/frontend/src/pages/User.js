@@ -1,11 +1,11 @@
-// src/pages/user.js
+
 import React, { useState, useEffect } from 'react';
 
 function User() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Function to fetch users from the API
+    
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -21,7 +21,7 @@ function User() {
             }
             const data = await response.json();
 
-            // Assuming users are stored in the `content` property of the response
+            
             setUsers(data.content);
         } catch (error) {
             console.error('There was an error fetching the users:', error);
@@ -32,18 +32,18 @@ function User() {
 
     useEffect(() => {
         fetchUsers();
-        // You could also call fetchusers here directly if you want to load users as soon as the component mounts
+       
     }, []);
 
-    // Placeholder functions for edit and delete actions
+   
     const handleEdit = (userId) => {
         console.log('Edit', userId);
-        // Implement your edit logic here
+        
     };
 
     const handleDelete = (userId) => {
         console.log('Delete', userId);
-        // Implement your delete logic here
+      
     };
 
     return (

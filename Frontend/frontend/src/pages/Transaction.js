@@ -75,7 +75,7 @@ function Transaction() {
             await fetchTransactions();
             setShowAddForm(false);
             setEditingTransactionId(null);
-            navigate('/transaction'); // Redirect or refresh the transaction list page
+            navigate('/transaction'); 
         } catch (error) {
             console.error('There was an error submitting the transaction:', error);
         }

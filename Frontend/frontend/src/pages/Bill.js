@@ -4,18 +4,18 @@ import { useNavigate } from 'react-router-dom';
 function Bill() {
     const [bills, setBills] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [showAddForm, setShowAddForm] = useState(false); // State to toggle add form visibility
+    const [showAddForm, setShowAddForm] = useState(false); 
     const [editingBillId, setEditingBillId] = useState(null);
     const [editFormData, setEditFormData] = useState({ tenure: '', amount: '' });
     const [newBillData, setNewBillData] = useState({
         tenure: '',
         amount: '',
-        categoryId: 'dining_out', // Defaulting to 'dining_out', adjust as needed
+        categoryId: 'dining_out', 
     });
 
     const navigate = useNavigate();
 
-    // Function to fetch bills from the API
+   
     const fetchBills = async () => {
         setLoading(true);
         try {
@@ -32,7 +32,7 @@ function Bill() {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            setBills(data.content); // Assuming the response has a 'content' field containing the bills
+            setBills(data.content);
         } catch (error) {
             console.error('There was an error fetching the bills:', error);
         } finally {
@@ -40,10 +40,9 @@ function Bill() {
         }
     };
 
-    // Existing handleEditClick, handleDelete, handleEditFormChange, handleEditFormSubmit functions
 
     useEffect(() => {
-      fetchBills(); // Fetch bills when component mounts
+      fetchBills(); 
   }, []);
 
     const handleEditClick = (bill) => {
@@ -80,9 +79,9 @@ function Bill() {
 
         const editedBill = {
             id: editingBillId,
-            tenure: parseInt(editFormData.tenure, 10), // Ensure tenure is an integer
-            amount: parseFloat(editFormData.amount), // Ensure amount is a float
-            categoryId: "dining_out" // Assuming categoryId remains unchanged or is handled separately
+            tenure: parseInt(editFormData.tenure, 10),
+            amount: parseFloat(editFormData.amount), 
+            categoryId: "dining_out" 
         };
 
         try {
@@ -99,10 +98,10 @@ function Bill() {
                 throw new Error('Network response was not ok');
             }
 
-            // On successful update, re-fetch bills to show updated data
+           
             await fetchBills();
-            setEditingBillId(null); // Reset editing state
-            navigate('/bill'); // Redirect or simply refresh the bills list page
+            setEditingBillId(null); 
+            navigate('/bill'); 
         } catch (error) {
             console.error('There was an error updating the bill:', error);
         }
@@ -130,16 +129,16 @@ function Bill() {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            await fetchBills(); // Refresh the list of bills
-            setShowAddForm(false); // Hide the add form
-            navigate('/bill'); // Redirect or refresh the bills list page
+            await fetchBills(); 
+            setShowAddForm(false); 
+            navigate('/bill'); 
         } catch (error) {
             console.error('There was an error adding the bill:', error);
         }
     };
 
     useEffect(() => {
-        // Existing useEffect for fetchBills
+       
     }, []);
 
     return (

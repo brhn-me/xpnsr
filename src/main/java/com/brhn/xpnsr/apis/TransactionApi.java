@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Bean;
 @RestController
 @Tag(name = "Transaction API", description = "The api for managing all transactions of XPNSR")
 @RequestMapping("/api/transactions")
-
 public class TransactionApi {
 
     private final TransactionService transactionService;

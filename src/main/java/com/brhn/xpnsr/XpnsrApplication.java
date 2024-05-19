@@ -16,17 +16,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SpringBootApplication
 public class XpnsrApplication {
     // CORS Configuration
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("*")
-                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
-            }
-        };
-    }
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("*")
+//                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
+//            }
+//        };
+//    }
     public static void main(String[] args) {
         SpringApplication.run(XpnsrApplication.class, args);
     }

@@ -38,18 +38,6 @@ public class TransactionApi {
     public TransactionApi(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
-//    // CORS Configuration
-//    @Bean
-//    public WebMvcConfigurer corsConfigurer() {
-//        return new WebMvcConfigurer() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/**")
-//                        .allowedOrigins("*")
-//                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
-//            }
-//        };
-//    }
     @Operation(summary = "Add a new transaction", responses = {@ApiResponse(responseCode = "200", description = "Transaction added successfully", content = @Content(schema = @Schema(implementation = TransactionDTO.class))), @ApiResponse(responseCode = "400", description = "Invalid transaction data provided")})
     @PostMapping("/")
 

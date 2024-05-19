@@ -36,18 +36,7 @@ public class BudgetApi {
     public BudgetApi(BudgetService budgetService) {
         this.budgetService = budgetService;
     }
-//    // CORS Configuration
-//    @Bean
-//    public WebMvcConfigurer corsConfigurer() {
-//        return new WebMvcConfigurer() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/**")
-//                        .allowedOrigins("*")
-//                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
-//            }
-//        };
-//    }
+
     @PostMapping("/")
     @Operation(summary = "Add a new budget", description = "Creates a new budget and returns the created budget details",
             responses = {

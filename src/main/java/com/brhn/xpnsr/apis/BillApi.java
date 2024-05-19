@@ -38,18 +38,6 @@ public class BillApi {
         this.billService = billService;
     }
 
-    // CORS Configuration
-//    @Bean
-//    public WebMvcConfigurer corsConfigurer() {
-//        return new WebMvcConfigurer() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/**")
-//                        .allowedOrigins("*")
-//                        .allowedMethods("POST", "GET", "DELETE","PUT"); // Specify allowed methods
-//            }
-//        };
-//    }
 
     @PostMapping("/")
     @Operation(summary = "Create a new bill", description = "Adds a new bill to the system.",

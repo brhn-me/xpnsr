@@ -9,6 +9,7 @@
 
 ### Action points
 *List here the actions points discussed with assistants*
+- Deliverable wiki has been updated according to provided feedback
 
 
 
@@ -22,7 +23,7 @@
 
 ### Action points
 *List here the actions points discussed with assistants*
-
+- Deliverable wiki has been updated according to provided feedback
 
 
 

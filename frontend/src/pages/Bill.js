@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Bill() {
+    // Stating variables for managing bills
     const [bills, setBills] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false); 
@@ -15,7 +16,7 @@ function Bill() {
 
     const navigate = useNavigate();
 
-   
+    // For fetching bills from the API
     const fetchBills = async () => {
         setLoading(true);
         try {
@@ -44,11 +45,13 @@ function Bill() {
     useEffect(() => {
       fetchBills(); 
   }, []);
+    //  For handling edit button click
 
     const handleEditClick = (bill) => {
         setEditingBillId(bill.id);
         setEditFormData({ tenure: bill.tenure, amount: bill.amount });
     };
+    //  To Delete a bill
 
     const handleDelete = async (billId) => {
         try {
@@ -68,11 +71,12 @@ function Bill() {
             console.error('There was an error deleting the bill:', error);
         }
     };
-
+//  For handling changes in the edit form
     const handleEditFormChange = (event) => {
         const { name, value } = event.target;
         setEditFormData({ ...editFormData, [name]: value });
     };
+// For handling the submission of the edit form
 
     const handleEditFormSubmit = async (event) => {
         event.preventDefault();
@@ -108,11 +112,13 @@ function Bill() {
     };
 
 
-
+    // For handling the changes in the add form
     const handleAddFormChange = (event) => {
         const { name, value } = event.target;
         setNewBillData({ ...newBillData, [name]: value });
     };
+
+        // Handling the submission of the add form
 
     const handleAddBill = async (event) => {
         event.preventDefault();
@@ -145,6 +151,7 @@ function Bill() {
         <div>
             {/*<button className="btn btn-primary my-3" onClick={fetchBills}>Show All Bills</button>*/}
             <button className="btn btn-secondary my-3" onClick={() => setShowAddForm(!showAddForm)}>Add Bill</button>
+            <a href="http://localhost:5000/generate/report/bills" className="btn btn-primary my-3">Export CSV</a>
 
             {showAddForm && (
                 <form onSubmit={handleAddBill}>

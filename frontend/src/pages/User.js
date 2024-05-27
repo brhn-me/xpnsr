@@ -2,10 +2,14 @@
 import React, { useState, useEffect } from 'react';
 
 function User() {
+
+    // Declaring the State variables for user data and loading state
+
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    
+        // Getting users from the API
+
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -17,30 +21,31 @@ function User() {
                 }
             });
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Network response was not ok');  // for throwing an error if the response is not ok
             }
             const data = await response.json();
 
             
-            setUsers(data.content);
+            setUsers(data.content); // Setting the user data in state
         } catch (error) {
-            console.error('There was an error fetching the users:', error);
+            console.error('There was an error fetching the users:', error); //For showing any errors that occur in the Log
         } finally {
-            setLoading(false);
+            setLoading(false);  // declaring the loading state to false after fetching data
         }
     };
-
+// Get the users when the component mounts
     useEffect(() => {
         fetchUsers();
        
     }, []);
 
-   
+    //  For editing a user
     const handleEdit = (userId) => {
         console.log('Edit', userId);
         
     };
-
+    
+    // For deleting a user
     const handleDelete = (userId) => {
         console.log('Delete', userId);
       

@@ -24,8 +24,8 @@ To get this project up and running on your local machine, follow these steps:
 First, clone the repository to your local machine:
 
 ```bash
-git clone https://yourrepositoryurl.com
-cd your-project-directory
+git clone https://github.com/brhn-me/xpnsr.git
+cd xpnsr
 ```
 
 ### Installing Dependencies

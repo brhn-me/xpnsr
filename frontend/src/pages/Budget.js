@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Budget() {
+        // Stating variables for managing budgets and form visibility
+
     const [budgets, setBudgets] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
@@ -15,7 +17,7 @@ function Budget() {
     });
 
     const navigate = useNavigate();
-
+// Managing the functionality of fetching budgets from the API
     const fetchBudgets = async () => {
         setLoading(true);
         try {
@@ -37,15 +39,17 @@ function Budget() {
             setLoading(false);
         }
     };
-
+    // Fetching budgets on the component mount
     useEffect(() => {
         fetchBudgets();
     }, []);
+    //  Function to handle changes in the form fields
 
     const handleAddFormChange = (event) => {
         const { name, value } = event.target;
         setBudgetData({ ...budgetData, [name]: value });
     };
+    //  FOr handling the submission of new budget or edited budget
 
     const handleAddBudget = async (event) => {
         event.preventDefault();
@@ -69,12 +73,14 @@ function Budget() {
             console.error('There was an error adding the budget:', error);
         }
     };
+    // Implementing Functionality to handle click on edit button
 
     const handleEditClick = (budget) => {
         setEditingBudgetId(budget.id);
         setBudgetData(budget);
         setShowAddForm(true);
     };
+    // Function to handle submission of edited budget
 
     const handleEditBudgetSubmit = async (event) => {
         event.preventDefault();
@@ -99,7 +105,8 @@ function Budget() {
             console.error('There was an error updating the budget:', error);
         }
     };
-
+   
+    //  handling deletion of a budget
     const handleDelete = async (budgetId) => {
         try {
             const response = await fetch(`http://localhost:8080/api/budgets/${budgetId}`, {
@@ -123,6 +130,7 @@ function Budget() {
         <div>
             {/*<button className="btn btn-primary my-3" onClick={fetchBudgets}>Show All Budgets</button>*/}
             <button className="btn btn-secondary my-3" onClick={() => setShowAddForm(!showAddForm)}>{showAddForm ? 'Cancel' : 'Add Budget'}</button>
+            <a href="http://localhost:5000/generate/report/budgets" className="btn btn-primary my-3">Export CSV</a>
 
             {showAddForm && (
                 <form onSubmit={editingBudgetId ? handleEditBudgetSubmit : handleAddBudget}>

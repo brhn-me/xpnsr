@@ -2,10 +2,13 @@
 import React, { useState, useEffect } from 'react';
 
 function Category() {
+    // Declaring variables for managing categories and loading state
+
     const [categorys, setCategorys] = useState([]);
     const [loading, setLoading] = useState(false);
 
-   
+       // fetching categories from the API
+
     const fetchCategorys = async () => {
         setLoading(true);
         try {
@@ -21,7 +24,8 @@ function Category() {
             }
             const data = await response.json();
 
-            
+                        // Set the fetched categories in the already declared state
+
             setCategorys(data.content);
         } catch (error) {
             console.error('There was an error fetching the categorys:', error);
@@ -29,17 +33,20 @@ function Category() {
             setLoading(false);
         }
     };
+    // getting the categories on  mounting
 
     useEffect(() => {
         fetchCategorys();
         
     }, []);
 
-   
+       //  handling the edit action 
+
     const handleEdit = (categoryId) => {
         console.log('Edit', categoryId);
       
     };
+       //  handling the delete action 
 
     const handleDelete = (categoryId) => {
         console.log('Delete', categoryId);

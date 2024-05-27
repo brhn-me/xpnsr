@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Transaction() {
+        // Declaring states for transactions, loading state, form visibility, editing ID, and form data
+
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
@@ -22,6 +24,7 @@ function Transaction() {
     });
 
     const navigate = useNavigate();
+    // fetching transactions from the API
 
     const fetchTransactions = async () => {
         setLoading(true);
@@ -44,16 +47,21 @@ function Transaction() {
             setLoading(false);
         }
     };
+    // Fetching the transactions when the component mounts
 
     useEffect(() => {
         fetchTransactions();
     }, []);
-
+    
+    
+    //For  Handling the changes in the form fields
     const handleAddFormChange = (event) => {
         const { name, value } = event.target;
         setTransactionData({ ...transactionData, [name]: value });
     };
 
+    
+    // Handling the form submission for adding or editing a transaction
     const handleSubmit = async (event) => {
         event.preventDefault();
         const method = editingTransactionId ? 'PUT' : 'POST';
@@ -80,12 +88,16 @@ function Transaction() {
             console.error('There was an error submitting the transaction:', error);
         }
     };
+    // Handle click on the edit button for a transaction
 
     const handleEditClick = (transaction) => {
         setEditingTransactionId(transaction.id);
         setTransactionData({...transaction});
         setShowAddForm(true);
     };
+
+    
+    // For Handling the deleting a transaction
 
     const handleDelete = async (transactionId) => {
         try {
@@ -126,6 +138,7 @@ function Transaction() {
                 });
                 setShowAddForm(!showAddForm);
             }}>{showAddForm ? 'Cancel' : 'Add Transaction'}</button>
+            <a href="http://localhost:5000/generate/report/transactions" className="btn btn-primary my-3">Export CSV</a>
 
             {showAddForm && (
                 <form onSubmit={handleSubmit}  method= "POST" action="profile/proffesional" modelattribute="PROFESSIONAL">

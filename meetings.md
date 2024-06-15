@@ -78,15 +78,24 @@ Prof. Ivan emphasized the importance of implementing different API methods and e
 
 
 ## Meeting 4.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 2024-04-11
+* **ASSISTANTS:** Prof. Iván
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+During our meeting, we discussed about hypermedia design, and its implementation. We talked about the feedback we received last time on our documentation. We showed our work of how the system responds to different requests, especially when there are errors (like when something isn’t found), need to be clearer and match exactly what happens in the system.
+
+The way we’ve planned out the links between different parts of the project were also discussed. Right now, our diagram that shows these links wasn't finished, and some of the connections we planned aren’t clear. We also need to explain why we’re making some links ourselves instead of using standard ones that are already known.
+
+When we looked at how we’ve built the system so far, there are some places where the system doesn’t work like it’s supposed to. For example, if someone tries to update something without saying how much money is involved, the system should say that’s not okay with a 400 error. Instead, it gives a 500 error right now.
+
 
 ### Action points
-*List here the actions points discussed with assistants*
-
+- Organize the documentation so it's easier to use and understand.
+- Making sure all examples of how the system responds are clear and match what really happens.
+- Finish the diagram that shows how everything in the system connects.
+- Explain clearly why we've chosen to make links the way we have.
+- Fix the part of the system that gives the wrong error message when someone tries to update something without saying how much money is involved.
+- Test the API more to make sure it works in all the ways we've said it should.
 
 
 
@@ -104,14 +113,23 @@ Prof. Ivan emphasized the importance of implementing different API methods and e
 
 
 ## Final meeting
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE:** 2024-05-27 
+* **ASSISTANTS:** Prof. Iván
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+During our final meeting, we presented the client description, implementation, hypermedia use, and the auxiliary service. For the **client description**, our overview was too vague. We need to give more details about what the client does and which API methods it uses. The use case diagram, GUI layout, and screen workflow were good and clear.
+
+In **client implementation**, our instructions, code documentation, quality, and demonstration were strong. However, we need to handle errors better so that wrong inputs are managed properly. The visual design of the client needs improvement to make it more user-friendly. We also need to add more features and complexity. 
+
+We did not implemented the **use of hypermedia**  We need to use link relation names to navigate the API and create forms dynamically based on provided schemas.
 
 ### Action points
-*List here the actions points discussed with assistants*
+- Give a detailed overview of the client, specifying the resources and methods it accesses.
+- Handle errors better to manage invalid inputs.
+- Improve the visual design of the client for better user experience.
+- Add more features and complexity to the client.
+- Implementing Hypermedia
+- Clearly justify the chosen architecture in the documentation of Auxiliary Service.
 
 
 

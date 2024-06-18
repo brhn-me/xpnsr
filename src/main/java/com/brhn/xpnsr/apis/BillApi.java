@@ -19,26 +19,35 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.context.annotation.Bean;
+
+/**
+ * REST controller for managing bills in the XPNSR application.
+ * Provides endpoints for creating, updating, retrieving, and deleting bills.
+ */
 @CrossOrigin(origins = "*")
 @RestController
-
 @Tag(name = "Bill API", description = "The api for managing all bills of XPNSR")
 @RequestMapping("/api/bills")
-
 public class BillApi {
 
     private final BillService billService;
 
-
+    /**
+     * Constructs a new BillApi instance with the specified BillService.
+     *
+     * @param billService the service for handling bill operations
+     */
     @Autowired
     public BillApi(BillService billService) {
         this.billService = billService;
     }
 
-
+    /**
+     * Creates a new bill.
+     *
+     * @param b the bill data transfer object containing bill details
+     * @return the created bill as an entity model wrapped in a response entity
+     */
     @PostMapping("/")
     @Operation(summary = "Create a new bill", description = "Adds a new bill to the system.",
             responses = {
@@ -54,6 +63,13 @@ public class BillApi {
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
 
+    /**
+     * Updates an existing bill.
+     *
+     * @param id the ID of the bill to be updated
+     * @param bill the bill data transfer object containing updated bill details
+     * @return the updated bill as an entity model wrapped in a response entity
+     */
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing bill", description = "Updates details of an existing bill by ID.",
             responses = {
@@ -72,6 +88,12 @@ public class BillApi {
         return ResponseEntity.ok(entityModel);
     }
 
+    /**
+     * Retrieves a bill's details by its ID.
+     *
+     * @param id the ID of the bill to retrieve
+     * @return the retrieved bill as an entity model wrapped in a response entity
+     */
     @GetMapping("/{id}")
     @Operation(summary = "Get a bill by ID", description = "Retrieves a bill's details by its ID.",
             responses = {
@@ -89,6 +111,12 @@ public class BillApi {
         return ResponseEntity.ok(entityModel);
     }
 
+    /**
+     * Retrieves a paginated list of all bills.
+     *
+     * @param pageable the pagination information
+     * @return a paginated list of bills as entity models wrapped in a response entity
+     */
     @GetMapping("/")
     @Operation(summary = "List all bills", description = "Retrieves a paginated list of all bills.",
             responses = {
@@ -108,6 +136,12 @@ public class BillApi {
         return ResponseEntity.ok(entityModelsPage);
     }
 
+    /**
+     * Deletes a bill by its ID.
+     *
+     * @param id the ID of the bill to delete
+     * @return a response entity with no content
+     */
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a bill", description = "Deletes a bill by its ID.",
             responses = {
@@ -118,4 +152,3 @@ public class BillApi {
         return ResponseEntity.noContent().build();
     }
 }
-

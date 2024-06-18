@@ -22,11 +22,10 @@ public class DataLoader implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
 
+    // Repositories for interacting with database
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
-
     private final CategoryRepository categoryRepository;
-
     private final TransactionRepository transactionRepository;
 
     @Autowired
@@ -38,12 +37,13 @@ public class DataLoader implements CommandLineRunner {
         this.transactionRepository = transactionRepository;
     }
 
+    // This method is executed upon application startup
     @Override
     public void run(String... args) throws Exception {
+        // Check if sample data needs to be loaded
         if (applicationRepository.count() == 0) {
             log.info("Generating sample application data...");
             loadSampleApplications();
-
         }
 
         if (userRepository.count() == 0) {
@@ -62,8 +62,8 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
+    // Load sample applications into the database
     private void loadSampleApplications() {
-        // generate dummy applications with api keys
         Application app0 = new Application();
         app0.setName("Test");
         app0.setApiKey("c779c66a194f4ddfbc22a9e2dacb5835");
@@ -80,12 +80,11 @@ public class DataLoader implements CommandLineRunner {
         applicationRepository.save(app1);
         applicationRepository.save(app2);
 
-
         // Add more applications as needed
     }
 
+    // Load sample user into the database
     private void loadSampleUsers() {
-        // load user
         User user = new User();
         user.setLogin("sample_user");
         user.setPasswordHash("sample_user_hash");
@@ -101,7 +100,9 @@ public class DataLoader implements CommandLineRunner {
         userRepository.save(user);
     }
 
+    // Load sample categories into the database
     private void loadSampleCategories() {
+        // Create categories
         Category groceries = createCategory("groceries", "Groceries", TransactionType.EXPENSE, "groceries_icon", "Expenses for groceries and food items");
         Category salary = createCategory("salary", "Salary", TransactionType.EARNING, "salary_icon", "Monthly salary");
         Category utilities = createCategory("utilities", "Utilities", TransactionType.EXPENSE, "utilities_icon", "Monthly bills for utilities like electricity, water, internet");
@@ -128,20 +129,11 @@ public class DataLoader implements CommandLineRunner {
         categoryRepository.save(gifts);
     }
 
-    private Category createCategory(String id, String name, TransactionType type, String icon, String description) {
-        Category category = new Category();
-        category.setId(id);
-        category.setName(name);
-        category.setType(type);
-        category.setIcon(icon);
-        category.setDescription(description);
-        return category;
-    }
-
+    // Load sample transactions into the database
     private void loadSampleTransactions() {
-        User user = userRepository.findAll().iterator().next();
+        User user = userRepository.findAll().iterator().next(); // Fetch first user
 
-        // Fetch sample categories by name
+        // Fetch sample categories by ID
         Category groceriesCategory = categoryRepository.findById("groceries").orElseThrow();
         Category salaryCategory = categoryRepository.findById("salary").orElseThrow();
         Category utilitiesCategory = categoryRepository.findById("utilities").orElseThrow();
@@ -170,6 +162,18 @@ public class DataLoader implements CommandLineRunner {
         createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("100.00"), giftsCategory, "Birthday gift for a friend", user);
     }
 
+    // Helper method to create a category
+    private Category createCategory(String id, String name, TransactionType type, String icon, String description) {
+        Category category = new Category();
+        category.setId(id);
+        category.setName(name);
+        category.setType(type);
+        category.setIcon(icon);
+        category.setDescription(description);
+        return category;
+    }
+
+    // Helper method to create and save a transaction
     private void createAndSaveTransaction(Timestamp date, TransactionType type, BigDecimal amount, Category primaryCategory, String description, User user) {
         Transaction transaction = new Transaction();
         transaction.setDate(date);
@@ -182,11 +186,12 @@ public class DataLoader implements CommandLineRunner {
         transactionRepository.save(transaction);
     }
 
-
+    // Helper method to generate a random API key
     private String generateApiKey() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    // This method is executed after the application has started
     @EventListener(ApplicationReadyEvent.class)
     public void runAfterStartup() {
         try {
@@ -196,4 +201,3 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 }
-

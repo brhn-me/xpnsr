@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * REST controller for managing categories in the XPNSR application.
+ * Provides endpoints for creating, updating, retrieving, and deleting categories.
+ */
 @RestController
 @Tag(name = "Category API", description = "APIs for managing categories in the XPNSR application.")
 @RequestMapping("/api/categories")
@@ -28,10 +32,22 @@ public class CategoryApi {
 
     private final CategoryService categoryService;
 
+    /**
+     * Constructs a new CategoryApi instance with the specified CategoryService.
+     *
+     * @param categoryService the service for handling category operations
+     */
     public CategoryApi(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
+    /**
+     * Adds a new category.
+     *
+     * @param c the category data transfer object containing category details
+     * @return the created category as an entity model wrapped in a response entity
+     * @throws BadRequestError if the request is invalid
+     */
     @Operation(summary = "Add a new category", responses = {
             @ApiResponse(description = "Category added successfully",
                     responseCode = "200", content = @Content(schema = @Schema(implementation = CategoryDTO.class))),
@@ -45,6 +61,15 @@ public class CategoryApi {
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
 
+    /**
+     * Updates an existing category.
+     *
+     * @param id the ID of the category to be updated
+     * @param c the category data transfer object containing updated category details
+     * @return the updated category as an entity model wrapped in a response entity
+     * @throws NotFoundError if the category with the given ID is not found
+     * @throws BadRequestError if the request is invalid
+     */
     @Operation(summary = "Update an existing category", responses = {
             @ApiResponse(description = "Category updated successfully",
                     responseCode = "200", content = @Content(schema = @Schema(implementation = CategoryDTO.class))),
@@ -60,6 +85,13 @@ public class CategoryApi {
         return ResponseEntity.ok(entityModel);
     }
 
+    /**
+     * Retrieves a category's details by its ID.
+     *
+     * @param id the ID of the category to retrieve
+     * @return the retrieved category as an entity model wrapped in a response entity
+     * @throws NotFoundError if the category with the given ID is not found
+     */
     @Operation(summary = "Get a category by ID", responses = {
             @ApiResponse(description = "Category found", responseCode = "200",
                     content = @Content(schema = @Schema(implementation = CategoryDTO.class))),
@@ -74,6 +106,12 @@ public class CategoryApi {
         return ResponseEntity.ok(entityModel);
     }
 
+    /**
+     * Retrieves a paginated list of all categories.
+     *
+     * @param pageable the pagination information
+     * @return a paginated list of categories as entity models wrapped in a response entity
+     */
     @Operation(summary = "Get all categories", responses = {
             @ApiResponse(description = "List of categories", responseCode = "200",
                     content = @Content(schema = @Schema(implementation = Page.class)))})
@@ -90,6 +128,13 @@ public class CategoryApi {
         return ResponseEntity.ok(entityModelsPage);
     }
 
+    /**
+     * Deletes a category by its ID.
+     *
+     * @param id the ID of the category to delete
+     * @return a response entity with no content
+     * @throws NotFoundError if the category with the given ID does not exist
+     */
     @Operation(summary = "Delete a category by ID", responses = {
             @ApiResponse(description = "Category deleted successfully", responseCode = "204"),
             @ApiResponse(description = "Category not found", responseCode = "404")})

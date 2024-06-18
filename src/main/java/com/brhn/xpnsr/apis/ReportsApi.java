@@ -13,15 +13,30 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.util.List;
 
+/**
+ * REST controller for generating transaction reports.
+ * Provides endpoints to retrieve monthly and yearly reports based on transaction types.
+ */
 @RestController
 @RequestMapping("/api/reports")
 public class ReportsApi {
     private final TransactionService transactionService;
 
+    /**
+     * Constructs a new ReportsApi instance with the specified TransactionService.
+     *
+     * @param transactionService the service for handling transaction operations
+     */
     public ReportsApi(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
+    /**
+     * Retrieves a monthly report based on the specified transaction type.
+     *
+     * @param transactionType the type of transaction ('EARNING' or 'EXPENSE')
+     * @return a list of ReportDTO containing transaction details for the current month
+     */
     @GetMapping("/monthly-{transactionType}")
     public List<ReportDTO> getMonthlyReport(@PathVariable String transactionType) {
         YearMonth currentMonth = YearMonth.now();
@@ -36,6 +51,12 @@ public class ReportsApi {
         return transactionService.getTransactionsReport(type, startDate, endDate);
     }
 
+    /**
+     * Retrieves a yearly report based on the specified transaction type.
+     *
+     * @param transactionType the type of transaction ('EARNING' or 'EXPENSE')
+     * @return a list of ReportDTO containing transaction details for the current year
+     */
     @GetMapping("/yearly-{transactionType}")
     public List<ReportDTO> getYearlyReport(@PathVariable String transactionType) {
         Year currentYear = Year.now();
@@ -43,7 +64,7 @@ public class ReportsApi {
         LocalDate endDate = currentYear.atMonth(12).atEndOfMonth();
 
         TransactionType type = TransactionType.EXPENSE;
-        if ("EARNING".equals(type)) {
+        if ("EARNING".equals(transactionType)) {
             type = TransactionType.EARNING;
         }
 

@@ -2,6 +2,21 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.2'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'pmd'
+    id 'checkstyle'
+}
+
+
+pmd {
+    toolVersion = '6.44.0'
+    ruleSets = ['category/java/bestpractices.xml', 'category/java/design.xml']
+}
+
+tasks.withType(Pmd) {
+    reports {
+        xml.required.set(false)
+        html.required.set(true)
+    }
 }
 
 group = 'com.brhn'
@@ -19,6 +34,18 @@ configurations {
 
 repositories {
     mavenCentral()
+}
+
+checkstyle {
+    toolVersion = '10.17.0'
+    configFile = file('src/main/resources/checkstyle/checkstyle.xml')
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required.set(false)
+        html.required.set(true)
+    }
 }
 
 dependencies {

@@ -4,11 +4,13 @@ import com.brhn.xpnsr.exceptions.BadRequestError;
 import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.models.Category;
 import com.brhn.xpnsr.models.Transaction;
+import com.brhn.xpnsr.models.TransactionType;
 import com.brhn.xpnsr.models.User;
 import com.brhn.xpnsr.repositories.CategoryRepository;
 import com.brhn.xpnsr.repositories.TransactionRepository;
 import com.brhn.xpnsr.repositories.UserRepository;
 import com.brhn.xpnsr.security.AuthenticationProvider;
+import com.brhn.xpnsr.services.dtos.ReportDTO;
 import com.brhn.xpnsr.services.dtos.TransactionDTO;
 import com.brhn.xpnsr.services.mappers.TransactionMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +19,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionService {
@@ -106,5 +114,25 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("Transaction not found with id " + id));
         transactionRepository.delete(transaction);
+    }
+
+    public List<ReportDTO> getTransactionsReport(TransactionType transactionType, LocalDate startDate, LocalDate endDate) {
+        Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+        Timestamp endTimestamp = Timestamp.valueOf(endDate.plusDays(1).atStartOfDay().minusNanos(1));
+
+        List<Transaction> transactions = transactionRepository.findByTypeAndDateBetween(transactionType, startTimestamp, endTimestamp);
+
+        Map<Category, BigDecimal> collection = transactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getPrimaryCategory,
+                        Collectors.reducing(BigDecimal.ZERO, Transaction::getAmount, BigDecimal::add)));
+
+        return collection.entrySet().stream()
+                .map(entry -> {
+                    ReportDTO reportDTO = new ReportDTO();
+                    reportDTO.setCategory(entry.getKey().getName());
+                    reportDTO.setAmount(entry.getValue());
+                    return reportDTO;
+                })
+                .collect(Collectors.toList());
     }
 }

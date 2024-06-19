@@ -1,9 +1,11 @@
 package com.brhn.xpnsr.services;
 
+import com.brhn.xpnsr.exceptions.BadRequestError;
 import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.models.Bill;
 import com.brhn.xpnsr.models.User;
 import com.brhn.xpnsr.repositories.BillRepository;
+import com.brhn.xpnsr.repositories.CategoryRepository;
 import com.brhn.xpnsr.repositories.UserRepository;
 import com.brhn.xpnsr.security.AuthenticationProvider;
 import com.brhn.xpnsr.services.dtos.BillDTO;
@@ -21,19 +23,24 @@ public class BillService {
 
     private final BillRepository billRepository;
     private final UserRepository userRepository;
+
+    private final CategoryRepository categoryRepository;
+
     private final BillMapper billMapper;
 
     /**
      * Constructs a BillService with necessary repositories and mappers.
      *
-     * @param billRepository The repository for accessing Bill entities.
-     * @param userRepository The repository for accessing User entities.
-     * @param billMapper The mapper for converting between Bill and BillDTO.
+     * @param billRepository     The repository for accessing Bill entities.
+     * @param userRepository     The repository for accessing User entities.
+     * @param categoryRepository
+     * @param billMapper         The mapper for converting between Bill and BillDTO.
      */
     @Autowired
-    public BillService(BillRepository billRepository, UserRepository userRepository, BillMapper billMapper) {
+    public BillService(BillRepository billRepository, UserRepository userRepository, CategoryRepository categoryRepository, BillMapper billMapper) {
         this.billRepository = billRepository;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
         this.billMapper = billMapper;
     }
 
@@ -51,6 +58,9 @@ public class BillService {
                 .orElseThrow(() -> new NotFoundError("User not found with username: " + username));
         bill.setUser(user);
 
+        categoryRepository.findById(b.getCategoryId())
+                .orElseThrow(() -> new BadRequestError("Category does not exist"));
+
         bill = billRepository.save(bill);
         return billMapper.billToBillDTO(bill);
     }
@@ -59,10 +69,10 @@ public class BillService {
      * Updates an existing bill identified by its ID.
      *
      * @param id The ID of the bill to update.
-     * @param b The updated BillDTO.
+     * @param b  The updated BillDTO.
      * @return The updated BillDTO.
      * @throws RuntimeException if the bill with the specified ID cannot be found.
-     * @throws NotFoundError if the associated user cannot be found.
+     * @throws NotFoundError    if the associated user cannot be found.
      */
     public BillDTO updateBill(Long id, BillDTO b) {
         billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
@@ -72,6 +82,10 @@ public class BillService {
         User user = userRepository.findByEmail("sample.user@example.com")
                 .orElseThrow(() -> new NotFoundError("User not found with username: " + username));
         bill.setUser(user);
+
+        categoryRepository.findById(b.getCategoryId())
+                .orElseThrow(() -> new BadRequestError("Category does not exist"));
+
         bill = billRepository.save(bill);
         return billMapper.billToBillDTO(bill);
     }

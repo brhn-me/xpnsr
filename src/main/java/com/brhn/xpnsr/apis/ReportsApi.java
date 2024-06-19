@@ -2,7 +2,10 @@ package com.brhn.xpnsr.apis;
 
 import com.brhn.xpnsr.models.TransactionType;
 import com.brhn.xpnsr.services.TransactionService;
+import com.brhn.xpnsr.services.dtos.LinksDTO;
 import com.brhn.xpnsr.services.dtos.ReportDTO;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +15,8 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * REST controller for generating transaction reports.
@@ -69,5 +74,21 @@ public class ReportsApi {
         }
 
         return transactionService.getTransactionsReport(type, startDate, endDate);
+    }
+
+    /**
+     * Returns a LinksDTO containing links to various report-related endpoints.
+     *
+     * @return ResponseEntity containing a LinksDTO with links to the available report resources.
+     */
+    @GetMapping
+    public ResponseEntity<LinksDTO> getReportsRoot() {
+        LinksDTO reportsRoot = new LinksDTO();
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport("EXPENSE")).withRel("monthly-expenses"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport("EARNING")).withRel("monthly-earnings"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport("EXPENSE")).withRel("yearly-expenses"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport("EARNING")).withRel("yearly-earnings"));
+
+        return ResponseEntity.ok(reportsRoot);
     }
 }

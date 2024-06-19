@@ -37,7 +37,7 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String requestUri = request.getRequestURI();
 
-        if (requestUri.startsWith("/api/")) { // Check if the request is targeting the API endpoints
+        if (requestUri.startsWith("/api")) { // Check if the request is targeting the API endpoints
             String apiKey = request.getHeader(API_KEY_HEADER); // Retrieve API key from request header
 
             if (!validateApiKey(apiKey)) { // Validate the API key

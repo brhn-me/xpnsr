@@ -39,41 +39,31 @@ public class ReportsApi {
     /**
      * Retrieves a monthly report based on the specified transaction type.
      *
-     * @param transactionType the type of transaction ('EARNING' or 'EXPENSE')
+     * @param transactionType the type of transaction (EARNING or EXPENSE)
      * @return a list of ReportDTO containing transaction details for the current month
      */
     @GetMapping("/monthly-{transactionType}")
-    public List<ReportDTO> getMonthlyReport(@PathVariable String transactionType) {
+    public List<ReportDTO> getMonthlyReport(@PathVariable TransactionType transactionType) {
         YearMonth currentMonth = YearMonth.now();
         LocalDate startDate = currentMonth.atDay(1);
         LocalDate endDate = currentMonth.atEndOfMonth();
 
-        TransactionType type = TransactionType.EXPENSE;
-        if ("EARNING".equals(transactionType)) {
-            type = TransactionType.EARNING;
-        }
-
-        return transactionService.getTransactionsReport(type, startDate, endDate);
+        return transactionService.getTransactionsReport(transactionType, startDate, endDate);
     }
 
     /**
      * Retrieves a yearly report based on the specified transaction type.
      *
-     * @param transactionType the type of transaction ('EARNING' or 'EXPENSE')
+     * @param transactionType the type of transaction (EARNING or EXPENSE)
      * @return a list of ReportDTO containing transaction details for the current year
      */
     @GetMapping("/yearly-{transactionType}")
-    public List<ReportDTO> getYearlyReport(@PathVariable String transactionType) {
+    public List<ReportDTO> getYearlyReport(@PathVariable TransactionType transactionType) {
         Year currentYear = Year.now();
         LocalDate startDate = currentYear.atDay(1);
         LocalDate endDate = currentYear.atMonth(12).atEndOfMonth();
 
-        TransactionType type = TransactionType.EXPENSE;
-        if ("EARNING".equals(transactionType)) {
-            type = TransactionType.EARNING;
-        }
-
-        return transactionService.getTransactionsReport(type, startDate, endDate);
+        return transactionService.getTransactionsReport(transactionType, startDate, endDate);
     }
 
     /**
@@ -84,10 +74,10 @@ public class ReportsApi {
     @GetMapping
     public ResponseEntity<LinksDTO> getReportsRoot() {
         LinksDTO reportsRoot = new LinksDTO();
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport("EXPENSE")).withRel("monthly-expenses"));
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport("EARNING")).withRel("monthly-earnings"));
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport("EXPENSE")).withRel("yearly-expenses"));
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport("EARNING")).withRel("yearly-earnings"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport(TransactionType.EXPENSE)).withRel("monthly-expenses"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport(TransactionType.EARNING)).withRel("monthly-earnings"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport(TransactionType.EXPENSE)).withRel("yearly-expenses"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport(TransactionType.EARNING)).withRel("yearly-earnings"));
 
         return ResponseEntity.ok(reportsRoot);
     }

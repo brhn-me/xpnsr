@@ -149,17 +149,19 @@ public class DataLoader implements CommandLineRunner {
         Timestamp currentTime = new Timestamp(System.currentTimeMillis());
 
         // Create and save sample transactions
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("100.00"), groceriesCategory, "Weekly groceries", user);
-        createAndSaveTransaction(currentTime, TransactionType.EARNING, new BigDecimal("2000.00"), salaryCategory,
-                "Monthly salary", user);
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("150.00"), utilitiesCategory, "Monthly utilities", user);
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("75.00"), diningOutCategory, "Dining out with friends", user);
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("50.00"), entertainmentCategory, "Cinema tickets", user);
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("500.00"), travelCategory, "Weekend getaway", user);
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("200.00"), healthCategory, "Dental appointment", user);
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("300.00"), educationCategory, "Online courses", user);
-        createAndSaveTransaction(currentTime, TransactionType.EARNING, new BigDecimal("150.00"), savingsCategory, "Monthly savings contribution", user);
-        createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("100.00"), giftsCategory, "Birthday gift for a friend", user);
+        for (int i = 0; i < 10; i++) {
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("100.00"), groceriesCategory, "Weekly groceries", user);
+            createAndSaveTransaction(currentTime, TransactionType.EARNING, new BigDecimal("2000.00"), salaryCategory,
+                    "Monthly salary", user);
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("150.00"), utilitiesCategory, "Monthly utilities", user);
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("75.00"), diningOutCategory, "Dining out with friends", user);
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("50.00"), entertainmentCategory, "Cinema tickets", user);
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("500.00"), travelCategory, "Weekend getaway", user);
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("200.00"), healthCategory, "Dental appointment", user);
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("300.00"), educationCategory, "Online courses", user);
+            createAndSaveTransaction(currentTime, TransactionType.EARNING, new BigDecimal("150.00"), savingsCategory, "Monthly savings contribution", user);
+            createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("100.00"), giftsCategory, "Birthday gift for a friend", user);
+        }
     }
 
     // Helper method to create a category

@@ -77,9 +77,9 @@ public class BudgetService {
      * @throws NotFoundError    if the associated user cannot be found.
      */
     public BudgetDTO update(Long id, BudgetDTO b) {
-        Budget budget = budgetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Budget not found with id " + id));
-        budget = budgetMapper.budgetDTOToBudget(b);
+        budgetRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("Budget not found with id " + id));
+        Budget budget = budgetMapper.budgetDTOToBudget(b);
         budget.setId(id);
         String username = AuthenticationProvider.getCurrentUsername();
         User user = userRepository.findByEmail("sample.user@example.com")

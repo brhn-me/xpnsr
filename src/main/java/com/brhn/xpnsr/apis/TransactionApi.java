@@ -206,6 +206,12 @@ public class TransactionApi {
         // Self link
         entityModel.add(linkTo(methodOn(TransactionApi.class).get(transactionDTO.getId())).withSelfRel());
 
+        // Edit link
+        entityModel.add(linkTo(methodOn(TransactionApi.class).update(transactionDTO.getId(), transactionDTO)).withRel("edit"));
+
+        // Delete link
+        entityModel.add(linkTo(methodOn(TransactionApi.class).delete(transactionDTO.getId())).withRel("delete"));
+
         // Link to primary category (if exists)
         if (transactionDTO.getPrimaryCategoryId() != null) {
             entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(transactionDTO.getPrimaryCategoryId()))

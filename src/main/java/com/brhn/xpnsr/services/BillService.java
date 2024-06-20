@@ -75,7 +75,7 @@ public class BillService {
      * @throws NotFoundError    if the associated user cannot be found.
      */
     public BillDTO updateBill(Long id, BillDTO b) {
-        billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+        billRepository.findById(id).orElseThrow(() -> new NotFoundError("Bill not found with id " + id));
         Bill bill = billMapper.billDTOToBill(b);
         bill.setId(id);
         String username = AuthenticationProvider.getCurrentUsername();
@@ -98,7 +98,7 @@ public class BillService {
      * @throws RuntimeException if the bill with the specified ID cannot be found.
      */
     public BillDTO getBillById(Long id) {
-        Bill bill = billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+        Bill bill = billRepository.findById(id).orElseThrow(() -> new NotFoundError("Bill not found with id " + id));
         return billMapper.billToBillDTO(bill);
     }
 
@@ -120,7 +120,7 @@ public class BillService {
      * @throws RuntimeException if the bill with the specified ID cannot be found.
      */
     public void deleteBill(Long id) {
-        Bill bill = billRepository.findById(id).orElseThrow(() -> new RuntimeException("Bill not found with id " + id));
+        Bill bill = billRepository.findById(id).orElseThrow(() -> new NotFoundError("Bill not found with id " + id));
         billRepository.delete(bill);
     }
 }

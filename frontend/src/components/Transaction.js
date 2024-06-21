@@ -1,17 +1,25 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert } from 'react-bootstrap';
-import { ApiKeyContext } from '../ApiKeyProvider';
-import { fetchTransactions, deleteTransaction, updateTransaction, addTransaction } from '../api/TransactionApi';
-import { fetchCategories } from '../api/CategoryApi';
+import React, {useState, useEffect, useContext} from 'react';
+import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
+import {ApiKeyContext} from '../ApiKeyProvider';
+import {
+    fetchTransactions,
+    deleteTransaction,
+    updateTransaction,
+    addTransaction,
+    updateTransactionHM, deleteTransactionHM
+} from '../api/TransactionApi';
+import {fetchCategories} from '../api/CategoryApi';
 import TransactionForm from '../components/TransactionForm';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
-import { format } from 'date-fns';
+import {format} from 'date-fns';
+import {getHyperMediaLink} from "../api/HyperMedia";
+
 
 function Transaction() {
-    const { isAuthenticated } = useContext(ApiKeyContext);
+    const {isAuthenticated} = useContext(ApiKeyContext);
     const {
         data: transactions,
         loading: transactionsLoading,
@@ -66,15 +74,20 @@ function Transaction() {
     }
 
     const handleFormChange = (event) => {
-        const { name, value } = event.target;
-        setTransactionData((prevData) => ({ ...prevData, [name]: value }));
+        const {name, value} = event.target;
+        setTransactionData((prevData) => ({...prevData, [name]: value}));
     };
 
     const handleAddOrUpdateTransaction = async (event) => {
         event.preventDefault();
         try {
             if (transactionData.id) {
-                await updateTransaction(transactionData.id, transactionData);
+                const hmEditLink = getHyperMediaLink('edit', transactionData);
+                if (hmEditLink) {
+                    await updateTransactionHM(hmEditLink, transactionData);
+                } else {
+                    await updateTransaction(transactionData.id, transactionData);
+                }
                 setToastMessage('Transaction updated successfully.');
             } else {
                 await addTransaction(transactionData);
@@ -83,7 +96,11 @@ function Transaction() {
             await loadTransactions();
             setShowAddForm(false);
         } catch (error) {
-            handleError('Error adding/updating transaction.');
+            if (transactionData.id) {
+                handleError('Error updating transaction.');
+            } else {
+                handleError('Error adding transaction.');
+            }
         } finally {
             setShowToast(true);
         }
@@ -118,7 +135,12 @@ function Transaction() {
     const handleDeleteTransaction = async () => {
         if (transactionToDelete) {
             try {
-                await deleteTransaction(transactionToDelete.id);
+                const hmDeleteLink = getHyperMediaLink('delete', transactionToDelete);
+                if (hmDeleteLink) {
+                    await deleteTransactionHM(hmDeleteLink);
+                } else {
+                    await deleteTransaction(transactionToDelete.id);
+                }
                 await loadTransactions();
                 setToastMessage('Transaction deleted successfully.');
             } catch (error) {
@@ -130,6 +152,7 @@ function Transaction() {
             }
         }
     };
+
 
     const handleError = (message) => {
         setToastMessage(message);
@@ -153,7 +176,7 @@ function Transaction() {
             <Row>
                 <Col md={12}>
                     {transactionsLoading ? (
-                        <Spinner animation="border" />
+                        <Spinner animation="border"/>
                     ) : transactions.length > 0 ? (
                         <Table striped bordered hover>
                             <thead>
@@ -167,7 +190,7 @@ function Transaction() {
                                 <th>Description</th>
                                 <th>Tags</th>
                                 <th>Primary Category</th>
-                                <th style={{ width: '120px' }}>Actions</th>
+                                <th style={{width: '120px'}}>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -184,10 +207,12 @@ function Transaction() {
                                     <td>{categoryMap[transaction.primaryCategoryId]}</td>
                                     <td>
                                         <ButtonGroup size="sm">
-                                            <Button variant="outline-primary" onClick={() => handleShowEditForm(transaction)}>
+                                            <Button variant="outline-primary"
+                                                    onClick={() => handleShowEditForm(transaction)}>
                                                 Edit
                                             </Button>
-                                            <Button variant="outline-danger" onClick={() => confirmDeleteTransaction(transaction)}>
+                                            <Button variant="outline-danger"
+                                                    onClick={() => confirmDeleteTransaction(transaction)}>
                                                 Delete
                                             </Button>
                                         </ButtonGroup>

@@ -1,13 +1,14 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
 import {ApiKeyContext} from '../ApiKeyProvider';
-import {fetchBudgets, deleteBudget, updateBudget, addBudget} from '../api/BudgetApi';
+import {fetchBudgets, deleteBudget, updateBudget, addBudget, deleteBudgetHM, updateBudgetHM} from '../api/BudgetApi';
 import {fetchCategories} from '../api/CategoryApi';
 import BudgetForm from '../components/BudgetForm';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
+import {getHyperMediaLink} from "../api/HyperMedia";
 
 function Budget() {
     const {isAuthenticated} = useContext(ApiKeyContext);
@@ -70,7 +71,12 @@ function Budget() {
         event.preventDefault();
         try {
             if (budgetData.id) {
-                await updateBudget(budgetData.id, budgetData);
+                const hmEditLink = getHyperMediaLink('edit', budgetData);
+                if (hmEditLink) {
+                    await updateBudgetHM(hmEditLink, budgetData);
+                } else {
+                    await updateBudget(budgetData.id, budgetData);
+                }
                 setToastMessage('Budget updated successfully.');
             } else {
                 await addBudget(budgetData);
@@ -79,11 +85,16 @@ function Budget() {
             await loadBudgets();
             setShowAddForm(false);
         } catch (error) {
-            handleError('Error adding/updating budget.');
+            if (budgetData.id) {
+                handleError('Error updating budget.');
+            } else {
+                handleError('Error adding budget.');
+            }
         } finally {
             setShowToast(true);
         }
     };
+
 
     const handleCloseForm = () => setShowAddForm(false);
     const handleShowAddForm = () => {
@@ -111,7 +122,12 @@ function Budget() {
     const handleDeleteBudget = async () => {
         if (budgetToDelete) {
             try {
-                await deleteBudget(budgetToDelete.id);
+                const hmDeleteLink = getHyperMediaLink('delete', budgetToDelete);
+                if (hmDeleteLink) {
+                    await deleteBudgetHM(hmDeleteLink);
+                } else {
+                    await deleteBudget(budgetToDelete.id);
+                }
                 await loadBudgets();
                 setToastMessage('Budget deleted successfully.');
             } catch (error) {
@@ -123,6 +139,7 @@ function Budget() {
             }
         }
     };
+
 
     const handleError = (message) => {
         setToastMessage(message);

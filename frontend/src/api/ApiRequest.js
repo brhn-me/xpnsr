@@ -4,7 +4,7 @@ const getHeaders = (contentType = 'application/json') => {
     const apiKey = getApiKey();
     return {
         'X-Requested-With': 'XMLHttpRequest',
-        'accept': 'application/json',
+        'Accept': 'application/json',
         'XPNSR-API-KEY': apiKey,
         ...(contentType && {'Content-Type': contentType})
     };
@@ -25,7 +25,7 @@ export const apiRequest = async ({url, method, body = null, contentType = 'appli
     const options = {
         method,
         headers: getHeaders(contentType),
-        ...(body && {body: JSON.stringify(body)}),
+        ...(body && {body: JSON.stringify(body)})
     };
 
     try {

@@ -1,9 +1,9 @@
 // BillApi.js
 
 
-import { apiRequest } from "./ApiRequest";
+import {apiRequest} from "./ApiRequest";
 
-const apiUrl = '/api/bills/';
+const apiUrl = '/api/bills';
 
 export const fetchBills = async (page = 0, size = 20) => {
     const response = await apiRequest({
@@ -21,9 +21,28 @@ export const deleteBill = async (id) => {
     });
 };
 
+
+export const deleteBillHM = async (hmUrl) => {
+    console.log(`Deleting via hypermedia url: ${hmUrl}`)
+    return apiRequest({
+        url: `${hmUrl}`,
+        method: 'DELETE',
+        contentType: null
+    });
+};
+
 export const updateBill = async (billId, bill) => {
     return apiRequest({
         url: `${apiUrl}/${billId}`,
+        method: 'PUT',
+        body: bill
+    });
+};
+
+export const updateBillHM = async (hmUrl, bill) => {
+    console.log(`Updating via hypermedia url: ${hmUrl}`)
+    return apiRequest({
+        url: `${hmUrl}`,
         method: 'PUT',
         body: bill
     });

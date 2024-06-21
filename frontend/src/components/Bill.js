@@ -3,13 +3,14 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
 import {ApiKeyContext} from '../ApiKeyProvider';
-import {fetchBills, deleteBill, updateBill, addBill} from '../api/BillApi';
+import {fetchBills, deleteBill, updateBill, addBill, updateBillHM, deleteBillHM} from '../api/BillApi';
 import {fetchCategories} from '../api/CategoryApi';
 import BillForm from '../components/BillForm';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
+import {getHyperMediaLink} from "../api/HyperMedia";
 
 function Bill() {
     const {isAuthenticated} = useContext(ApiKeyContext);
@@ -70,7 +71,12 @@ function Bill() {
         event.preventDefault();
         try {
             if (billData.id) {
-                await updateBill(billData.id, billData);
+                const hmEditLink = getHyperMediaLink('edit', billData);
+                if (hmEditLink) {
+                    await updateBillHM(hmEditLink, billData);
+                } else {
+                    await updateBill(billData.id, billData);
+                }
                 setToastMessage('Bill updated successfully.');
             } else {
                 await addBill(billData);
@@ -79,7 +85,12 @@ function Bill() {
             await loadBills();
             setShowAddForm(false);
         } catch (error) {
-            handleError('Error adding/updating bill.');
+            if (billData.id) {
+                handleError('Error updating bill.');
+            } else {
+                handleError('Error adding bill.');
+            }
+
         } finally {
             setShowToast(true);
         }
@@ -97,6 +108,7 @@ function Bill() {
             tenure: bill.tenure,
             amount: bill.amount,
             categoryId: bill.categoryId,
+            _links: bill._links,
         });
         setShowAddForm(true);
     };
@@ -109,7 +121,12 @@ function Bill() {
     const handleDeleteBill = async () => {
         if (billToDelete) {
             try {
-                await deleteBill(billToDelete.id);
+                const hmDeleteLink = getHyperMediaLink('delete', billToDelete);
+                if (hmDeleteLink) {
+                    await deleteBillHM(hmDeleteLink);
+                } else {
+                    await deleteBill(billToDelete.id);
+                }
                 await loadBills();
                 setToastMessage('Bill deleted successfully.');
             } catch (error) {

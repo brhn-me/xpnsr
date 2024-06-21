@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {Modal, Form, Button, Row, Col, Alert} from 'react-bootstrap';
-import {FormGroup} from "./FormGroup";
+import {FormGroup} from './FormGroup';
+import CategorySelector from './CategorySelector';
+import ExpenseCategorySelector from "./ExpenseCategorySelector";
 
 const BillForm = ({
                       billData,
@@ -40,6 +42,10 @@ const BillForm = ({
         }
     };
 
+    const handleCategoryChange = (categoryId) => {
+        handleFormChange({target: {name: 'categoryId', value: categoryId}});
+    };
+
     return (
         <Modal show={show} onHide={handleClose} centered>
             <Modal.Header closeButton>
@@ -74,29 +80,12 @@ const BillForm = ({
                         handleChange={handleFormChange}
                         error={errors.amount}
                     />
-                    <Form.Group as={Row} className="mb-3" controlId="formCategoryId">
-                        <Form.Label column sm={4}>Category</Form.Label>
-                        <Col sm={8}>
-                            <Form.Control
-                                as="select"
-                                name="categoryId"
-                                value={billData.categoryId}
-                                onChange={handleFormChange}
-                                isInvalid={!!errors.categoryId}
-                                required
-                            >
-                                <option value="">Select Category</option>
-                                {categories.map((category) => (
-                                    <option key={category.id} value={category.id}>
-                                        {category.name}
-                                    </option>
-                                ))}
-                            </Form.Control>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.categoryId}
-                            </Form.Control.Feedback>
-                        </Col>
-                    </Form.Group>
+                    <ExpenseCategorySelector
+                        categories={categories}
+                        selectedCategoryId={billData.categoryId}
+                        onCategoryChange={handleCategoryChange}
+                        errors={errors}
+                    />
                     <Button variant="success" type="submit">
                         {billData.id ? 'Save' : 'Add'}
                     </Button>
@@ -105,6 +94,5 @@ const BillForm = ({
         </Modal>
     );
 };
-
 
 export default BillForm;

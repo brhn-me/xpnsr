@@ -5,6 +5,7 @@ import com.brhn.xpnsr.repositories.ApplicationRepository;
 import com.brhn.xpnsr.repositories.CategoryRepository;
 import com.brhn.xpnsr.repositories.TransactionRepository;
 import com.brhn.xpnsr.repositories.UserRepository;
+import com.brhn.xpnsr.repositories.BillRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Component
@@ -22,19 +25,22 @@ public class DataLoader implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
 
-    // Repositories for interacting with database
+    // Repositories for interacting with the database
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
+    private final BillRepository billRepository;
 
     @Autowired
     public DataLoader(ApplicationRepository applicationRepository, UserRepository userRepository,
-                      CategoryRepository categoryRepository, TransactionRepository transactionRepository) {
+                      CategoryRepository categoryRepository, TransactionRepository transactionRepository,
+                      BillRepository billRepository) {
         this.applicationRepository = applicationRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
+        this.billRepository = billRepository;
     }
 
     // This method is executed upon application startup
@@ -60,6 +66,11 @@ public class DataLoader implements CommandLineRunner {
             log.info("Generating sample transactions data...");
             loadSampleTransactions();
         }
+
+        if (billRepository.count() == 0) {
+            log.info("Generating sample bill data...");
+            loadSampleBills();
+        }
     }
 
     // Load sample applications into the database
@@ -79,11 +90,9 @@ public class DataLoader implements CommandLineRunner {
         applicationRepository.save(app0);
         applicationRepository.save(app1);
         applicationRepository.save(app2);
-
-        // Add more applications as needed
     }
 
-    // Load sample user into the database
+    // Load sample users into the database
     private void loadSampleUsers() {
         User user = new User();
         user.setLogin("sample_user");
@@ -106,14 +115,12 @@ public class DataLoader implements CommandLineRunner {
         Category groceries = createCategory("groceries", "Groceries", TransactionType.EXPENSE, "groceries_icon", "Expenses for groceries and food items");
         Category salary = createCategory("salary", "Salary", TransactionType.EARNING, "salary_icon", "Monthly salary");
         Category utilities = createCategory("utilities", "Utilities", TransactionType.EXPENSE, "utilities_icon", "Monthly bills for utilities like electricity, water, internet");
-        Category diningOut = createCategory("dining_out", "Dining Out", TransactionType.EXPENSE, "dining_out_icon",
-                "Expenses for eating out at restaurants and cafes");
+        Category diningOut = createCategory("dining_out", "Dining Out", TransactionType.EXPENSE, "dining_out_icon", "Expenses for eating out at restaurants and cafes");
         Category entertainment = createCategory("entertainment", "Entertainment", TransactionType.EXPENSE, "entertainment_icon", "Expenses on movies, events, and other entertainment");
         Category travel = createCategory("travel", "Travel", TransactionType.EXPENSE, "travel_icon", "Expenses related to personal and family travels");
         Category health = createCategory("health", "Health", TransactionType.EXPENSE, "health_icon", "Medical expenses and health insurance");
         Category education = createCategory("education", "Education", TransactionType.EXPENSE, "education_icon", "Expenses for education, courses, and books");
-        Category savings = createCategory("savings", "Savings", TransactionType.EARNING, "savings_icon", "Income saved or " +
-                "invested for future use");
+        Category savings = createCategory("savings", "Savings", TransactionType.EARNING, "savings_icon", "Income saved or invested for future use");
         Category gifts = createCategory("gifts", "Gifts", TransactionType.EXPENSE, "gifts_icon", "Money spent on gifts for others");
 
         // Save categories
@@ -161,6 +168,23 @@ public class DataLoader implements CommandLineRunner {
             createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("300.00"), educationCategory, "Online courses", user);
             createAndSaveTransaction(currentTime, TransactionType.EARNING, new BigDecimal("150.00"), savingsCategory, "Monthly savings contribution", user);
             createAndSaveTransaction(currentTime, TransactionType.EXPENSE, new BigDecimal("100.00"), giftsCategory, "Birthday gift for a friend", user);
+        }
+    }
+
+    // Load sample bills into the database
+    private void loadSampleBills() {
+        Random random = new Random();
+        List<User> users = userRepository.findAll();
+        List<Category> categories = categoryRepository.findAll();
+
+        for (int i = 0; i < 100; i++) {
+            Bill bill = new Bill();
+            bill.setTenure(random.nextInt(12) + 1); // Tenure between 1 and 12 months
+            bill.setAmount(BigDecimal.valueOf(random.nextInt(500) + 1)); // Amount between 1 and 500
+            bill.setUser(users.get(random.nextInt(users.size())));
+            bill.setCategory(categories.get(random.nextInt(categories.size())));
+
+            billRepository.save(bill);
         }
     }
 

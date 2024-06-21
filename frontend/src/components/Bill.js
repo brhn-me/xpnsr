@@ -1,17 +1,29 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Button, Container, Row, Col, Table, Spinner, ButtonGroup } from 'react-bootstrap';
-import { ApiKeyContext } from '../ApiKeyProvider';
-import { fetchBills, deleteBill, updateBill, addBill } from '../api/BillApi';
-import { fetchCategories } from '../api/CategoryApi';
+import React, {useState, useEffect, useContext} from 'react';
+import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
+import {ApiKeyContext} from '../ApiKeyProvider';
+import {fetchBills, deleteBill, updateBill, addBill} from '../api/BillApi';
+import {fetchCategories} from '../api/CategoryApi';
 import BillForm from '../components/BillForm';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ToastNotification from '../components/ToastNotification';
-import useFetchData from './UseFetchData';
+import useFetchData from '../hooks/UseFetchData';
+import useCategoryMap from '../hooks/UseCategoryMap';
 
 function Bill() {
-    const { isAuthenticated } = useContext(ApiKeyContext);
-    const { data: bills, loading: billsLoading, error: billsError, reload: loadBills } = useFetchData(fetchBills, [isAuthenticated]);
-    const { data: categories, error: categoriesError, reload: loadCategories } = useFetchData(fetchCategories, [isAuthenticated]);
+    const {isAuthenticated} = useContext(ApiKeyContext);
+    const {
+        data: bills,
+        loading: billsLoading,
+        error: billsError,
+        reload: loadBills
+    } = useFetchData(fetchBills, [isAuthenticated]);
+    const {
+        data: categories,
+        error: categoriesError,
+        reload: loadCategories
+    } = useFetchData(fetchCategories, [isAuthenticated]);
+
+    const categoryMap = useCategoryMap(categories);
 
     const [showAddForm, setShowAddForm] = useState(false);
     const [billData, setBillData] = useState(initialBillData());
@@ -48,8 +60,8 @@ function Bill() {
     }
 
     const handleFormChange = (event) => {
-        const { name, value } = event.target;
-        setBillData((prevData) => ({ ...prevData, [name]: value }));
+        const {name, value} = event.target;
+        setBillData((prevData) => ({...prevData, [name]: value}));
     };
 
     const handleAddOrUpdateBill = async (event) => {
@@ -120,7 +132,8 @@ function Bill() {
                     <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
                         Add
                     </Button>
-                    <Button href="http://localhost:5000/generate/report/bills" variant="outline-dark" className="my-3 btn-sm">
+                    <Button href="http://localhost:5000/generate/report/bills" variant="outline-dark"
+                            className="my-3 btn-sm">
                         Export
                     </Button>
                 </Col>
@@ -129,7 +142,7 @@ function Bill() {
             <Row>
                 <Col md={12}>
                     {billsLoading ? (
-                        <Spinner animation="border" />
+                        <Spinner animation="border"/>
                     ) : bills.length > 0 ? (
                         <Table striped bordered hover>
                             <thead>
@@ -138,7 +151,7 @@ function Bill() {
                                 <th>Tenure</th>
                                 <th>Amount</th>
                                 <th>Category</th>
-                                <th style={{ width: '120px' }}>Actions</th>
+                                <th style={{width: '120px'}}>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -147,7 +160,7 @@ function Bill() {
                                     <td>{bill.id}</td>
                                     <td>{bill.tenure}</td>
                                     <td>{bill.amount}</td>
-                                    <td>{bill.categoryId}</td>
+                                    <td>{categoryMap[bill.categoryId]}</td>
                                     <td>
                                         <ButtonGroup size="sm">
                                             <Button variant="outline-primary" onClick={() => handleShowEditForm(bill)}>
@@ -163,7 +176,9 @@ function Bill() {
                             </tbody>
                         </Table>
                     ) : (
-                        <p>No bills available.</p>
+                        <Alert key='info' variant='info'>
+                            No bills available.
+                        </Alert>
                     )}
                 </Col>
             </Row>

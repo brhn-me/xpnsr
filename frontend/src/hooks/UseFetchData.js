@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import {useState, useEffect, useCallback} from 'react';
 
 const useFetchData = (fetchFunction, dependencies = []) => {
     const [data, setData] = useState([]);
@@ -21,7 +21,7 @@ const useFetchData = (fetchFunction, dependencies = []) => {
         fetchData();
     }, [fetchData, ...dependencies]);
 
-    return { data, loading, error, reload: fetchData };
+    return {data, loading, error, reload: fetchData};
 };
 
 export default useFetchData;

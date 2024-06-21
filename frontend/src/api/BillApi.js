@@ -1,13 +1,13 @@
-import {apiRequest} from "./ApiRequest";
-
+import { apiRequest } from "./ApiRequest";
 
 const apiUrl = '/api/bills/';
 
 export const fetchBills = async (page = 0, size = 20) => {
-    return apiRequest({
+    const response = await apiRequest({
         url: `${apiUrl}/?page=${page}&size=${size}`,
         method: 'GET'
     });
+    return response;
 };
 
 export const deleteBill = async (id) => {

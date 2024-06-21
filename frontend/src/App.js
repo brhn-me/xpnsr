@@ -5,10 +5,10 @@ import {ApiKeyContext} from './ApiKeyProvider';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Bill from './components/Bill';
-import Budget from './pages/Budget';
-import Category from './pages/Category';
-import User from './pages/User';
-import Transaction from './pages/Transaction';
+import Budget from './components/Budget';
+import Category from './components/Category';
+import User from './components/User';
+import Transaction from './components/Transaction';
 import ProtectedRoute from './components/ProtectedRoute';
 import {Helmet} from "react-helmet"; // Import the ProtectedRoute component
 

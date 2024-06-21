@@ -1,7 +1,8 @@
+// BillForm.js
+
 import React, {useState} from 'react';
-import {Modal, Form, Button, Row, Col, Alert} from 'react-bootstrap';
+import {Alert, Button, Form, Modal} from 'react-bootstrap';
 import {FormGroup} from './FormGroup';
-import CategorySelector from './CategorySelector';
 import ExpenseCategorySelector from "./ExpenseCategorySelector";
 
 const BillForm = ({

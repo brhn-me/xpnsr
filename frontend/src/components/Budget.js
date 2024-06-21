@@ -1,24 +1,22 @@
-// Bill.js
-
 import React, {useState, useEffect, useContext} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
 import {ApiKeyContext} from '../ApiKeyProvider';
-import {fetchBills, deleteBill, updateBill, addBill} from '../api/BillApi';
+import {fetchBudgets, deleteBudget, updateBudget, addBudget} from '../api/BudgetApi';
 import {fetchCategories} from '../api/CategoryApi';
-import BillForm from '../components/BillForm';
+import BudgetForm from '../components/BudgetForm';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
 
-function Bill() {
+function Budget() {
     const {isAuthenticated} = useContext(ApiKeyContext);
     const {
-        data: bills,
-        loading: billsLoading,
-        error: billsError,
-        reload: loadBills
-    } = useFetchData(fetchBills, [isAuthenticated]);
+        data: budgets,
+        loading: budgetsLoading,
+        error: budgetsError,
+        reload: loadBudgets
+    } = useFetchData(fetchBudgets, [isAuthenticated]);
     const {
         data: categories,
         error: categoriesError,
@@ -28,8 +26,8 @@ function Bill() {
     const categoryMap = useCategoryMap(categories);
 
     const [showAddForm, setShowAddForm] = useState(false);
-    const [billData, setBillData] = useState(initialBillData());
-    const [billToDelete, setBillToDelete] = useState(null);
+    const [budgetData, setBudgetData] = useState(initialBudgetData());
+    const [budgetToDelete, setBudgetToDelete] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
@@ -37,15 +35,15 @@ function Bill() {
     useEffect(() => {
         if (isAuthenticated) {
             loadCategories();
-            loadBills();
+            loadBudgets();
         }
-    }, [isAuthenticated, loadBills, loadCategories]);
+    }, [isAuthenticated, loadBudgets, loadCategories]);
 
     useEffect(() => {
-        if (billsError) {
-            handleError('Error fetching bills.');
+        if (budgetsError) {
+            handleError('Error fetching budgets.');
         }
-    }, [billsError]);
+    }, [budgetsError]);
 
     useEffect(() => {
         if (categoriesError) {
@@ -53,33 +51,35 @@ function Bill() {
         }
     }, [categoriesError]);
 
-    function initialBillData() {
+    function initialBudgetData() {
         return {
-            tenure: '',
+            title: '',
+            description: '',
             amount: '',
+            currency: 'BDT',
             categoryId: '',
         };
     }
 
     const handleFormChange = (event) => {
         const {name, value} = event.target;
-        setBillData((prevData) => ({...prevData, [name]: value}));
+        setBudgetData((prevData) => ({...prevData, [name]: value}));
     };
 
-    const handleAddOrUpdateBill = async (event) => {
+    const handleAddOrUpdateBudget = async (event) => {
         event.preventDefault();
         try {
-            if (billData.id) {
-                await updateBill(billData.id, billData);
-                setToastMessage('Bill updated successfully.');
+            if (budgetData.id) {
+                await updateBudget(budgetData.id, budgetData);
+                setToastMessage('Budget updated successfully.');
             } else {
-                await addBill(billData);
-                setToastMessage('Bill added successfully.');
+                await addBudget(budgetData);
+                setToastMessage('Budget added successfully.');
             }
-            await loadBills();
+            await loadBudgets();
             setShowAddForm(false);
         } catch (error) {
-            handleError('Error adding/updating bill.');
+            handleError('Error adding/updating budget.');
         } finally {
             setShowToast(true);
         }
@@ -87,36 +87,38 @@ function Bill() {
 
     const handleCloseForm = () => setShowAddForm(false);
     const handleShowAddForm = () => {
-        setBillData(initialBillData());
+        setBudgetData(initialBudgetData());
         setShowAddForm(true);
     };
 
-    const handleShowEditForm = (bill) => {
-        setBillData({
-            id: bill.id,
-            tenure: bill.tenure,
-            amount: bill.amount,
-            categoryId: bill.categoryId,
+    const handleShowEditForm = (budget) => {
+        setBudgetData({
+            id: budget.id,
+            title: budget.title,
+            description: budget.description,
+            amount: budget.amount,
+            currency: budget.currency,
+            categoryId: budget.categoryId,
         });
         setShowAddForm(true);
     };
 
-    const confirmDeleteBill = (bill) => {
-        setBillToDelete(bill);
+    const confirmDeleteBudget = (budget) => {
+        setBudgetToDelete(budget);
         setShowDeleteModal(true);
     };
 
-    const handleDeleteBill = async () => {
-        if (billToDelete) {
+    const handleDeleteBudget = async () => {
+        if (budgetToDelete) {
             try {
-                await deleteBill(billToDelete.id);
-                await loadBills();
-                setToastMessage('Bill deleted successfully.');
+                await deleteBudget(budgetToDelete.id);
+                await loadBudgets();
+                setToastMessage('Budget deleted successfully.');
             } catch (error) {
-                handleError('Error deleting bill.');
+                handleError('Error deleting budget.');
             } finally {
                 setShowDeleteModal(false);
-                setBillToDelete(null);
+                setBudgetToDelete(null);
                 setShowToast(true);
             }
         }
@@ -134,7 +136,7 @@ function Bill() {
                     <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
                         Add
                     </Button>
-                    <Button href="http://localhost:5000/generate/report/bills" variant="outline-dark"
+                    <Button href="http://localhost:5000/generate/report/budgets" variant="outline-dark"
                             className="my-3 btn-sm">
                         Export
                     </Button>
@@ -143,32 +145,36 @@ function Bill() {
 
             <Row>
                 <Col md={12}>
-                    {billsLoading ? (
+                    {budgetsLoading ? (
                         <Spinner animation="border"/>
-                    ) : bills.length > 0 ? (
+                    ) : budgets.length > 0 ? (
                         <Table striped bordered hover>
                             <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Tenure</th>
+                                <th>Title</th>
+                                <th>Description</th>
                                 <th>Amount</th>
+                                <th>Currency</th>
                                 <th>Category</th>
                                 <th style={{width: '120px'}}>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
-                            {bills.map((bill) => (
-                                <tr key={bill.id}>
-                                    <td>{bill.id}</td>
-                                    <td>{bill.tenure}</td>
-                                    <td>{bill.amount}</td>
-                                    <td>{categoryMap[bill.categoryId]}</td>
+                            {budgets.map((budget) => (
+                                <tr key={budget.id}>
+                                    <td>{budget.id}</td>
+                                    <td>{budget.title}</td>
+                                    <td>{budget.description}</td>
+                                    <td>{budget.amount}</td>
+                                    <td>{budget.currency}</td>
+                                    <td>{categoryMap[budget.categoryId]}</td>
                                     <td>
                                         <ButtonGroup size="sm">
-                                            <Button variant="outline-primary" onClick={() => handleShowEditForm(bill)}>
+                                            <Button variant="outline-primary" onClick={() => handleShowEditForm(budget)}>
                                                 Edit
                                             </Button>
-                                            <Button variant="outline-danger" onClick={() => confirmDeleteBill(bill)}>
+                                            <Button variant="outline-danger" onClick={() => confirmDeleteBudget(budget)}>
                                                 Delete
                                             </Button>
                                         </ButtonGroup>
@@ -179,16 +185,16 @@ function Bill() {
                         </Table>
                     ) : (
                         <Alert key='info' variant='info'>
-                            No bills available.
+                            No budgets available.
                         </Alert>
                     )}
                 </Col>
             </Row>
 
-            <BillForm
-                billData={billData}
+            <BudgetForm
+                budgetData={budgetData}
                 handleFormChange={handleFormChange}
-                handleAddOrUpdateBill={handleAddOrUpdateBill}
+                handleAddOrUpdateBudget={handleAddOrUpdateBudget}
                 show={showAddForm}
                 handleClose={handleCloseForm}
                 categories={categories}
@@ -198,9 +204,9 @@ function Bill() {
             <DeleteConfirmationModal
                 show={showDeleteModal}
                 handleClose={() => setShowDeleteModal(false)}
-                handleDelete={handleDeleteBill}
-                item={billToDelete}
-                itemDescription="bill"
+                handleDelete={handleDeleteBudget}
+                item={budgetToDelete}
+                itemDescription="budget"
             />
 
             <ToastNotification
@@ -212,4 +218,4 @@ function Bill() {
     );
 }
 
-export default Bill;
+export default Budget;

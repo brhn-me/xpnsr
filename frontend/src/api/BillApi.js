@@ -1,3 +1,6 @@
+// BillApi.js
+
+
 import { apiRequest } from "./ApiRequest";
 
 const apiUrl = '/api/bills/';

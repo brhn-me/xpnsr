@@ -1,6 +1,6 @@
 import {apiRequest} from './ApiRequest';
 
-const categoryApiUrl = 'api/categories';
+const categoryApiUrl = 'api/categories/';
 
 export const fetchCategories = async (page = 0, size = 20) => {
     return apiRequest({

@@ -1,6 +1,6 @@
 import {apiRequest} from "./ApiRequest";
 
-const apiUrl = '/api/budgets';
+const apiUrl = '/api/budgets/';
 
 export const fetchBudgets = async (page = 1, size = 20) => {
     // api page no starts with zero

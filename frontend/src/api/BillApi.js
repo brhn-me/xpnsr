@@ -3,7 +3,7 @@
 
 import {apiRequest} from "./ApiRequest";
 
-const apiUrl = '/api/bills';
+const apiUrl = '/api/bills/';
 
 export const fetchBills = async (page = 1, size = 20) => {
     // api page no starts with zero

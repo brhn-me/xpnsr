@@ -1,6 +1,6 @@
 import {apiRequest} from "./ApiRequest";
 
-const apiUrl = '/api/transactions';
+const apiUrl = '/api/transactions/';
 
 export const fetchTransactions = async (page = 1, size = 20) => {
     // API page numbers start from 0

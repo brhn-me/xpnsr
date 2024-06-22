@@ -2,14 +2,14 @@ import React, {useState, useEffect, useContext, useCallback} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
 import {useNavigate, useLocation} from 'react-router-dom';
 import {ApiKeyContext} from '../ApiKeyProvider';
-import {fetchBills, deleteBill, updateBill, addBill, updateBillHM, deleteBillHM} from '../api/BillApi';
+import {fetchBills, deleteBill, updateBill, addBill, updateBillHM, deleteBillHM, addBillHM} from '../api/BillApi';
 import {fetchCategories} from '../api/CategoryApi';
 import BillForm from '../components/BillForm';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
-import {getHyperMediaLink} from "../api/HyperMedia";
+import {getHyperMediaAddLink, getHyperMediaLink} from "../api/HyperMedia";
 import Pager from '../components/Pager';
 
 function useQuery() {
@@ -90,7 +90,12 @@ function Bill() {
                 }
                 setToastMessage('Bill updated successfully.');
             } else {
-                await addBill(billData);
+                const hmAddLink = getHyperMediaAddLink(navs);
+                if (hmAddLink) {
+                    await addBillHM(hmAddLink, billData);
+                } else {
+                    await addBill(billData);
+                }
                 setToastMessage('Bill added successfully.');
             }
             await loadBills();
@@ -163,9 +168,14 @@ function Bill() {
         <Container className="mt-3">
             <Row>
                 <Col md={12} className="d-flex justify-content-end">
-                    <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
-                        Add
-                    </Button>
+                    {
+                        navs?.add.href && (
+                            <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
+                                Add
+                            </Button>
+                        )
+                    }
+
                     <Button href="http://localhost:5000/generate/report/bills" variant="outline-dark"
                             className="my-3 btn-sm">
                         Export

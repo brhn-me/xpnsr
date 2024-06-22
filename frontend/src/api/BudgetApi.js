@@ -23,7 +23,7 @@ export const deleteBudget = async (id) => {
 export const deleteBudgetHM = async (hmUrl) => {
     console.log(`Deleting via hypermedia url: ${hmUrl}`);
     return apiRequest({
-        url: `${hmUrl}`,
+        url: hmUrl,
         method: 'DELETE',
         contentType: null
     });
@@ -40,7 +40,7 @@ export const updateBudget = async (budgetId, budget) => {
 export const updateBudgetHM = async (hmUrl, budget) => {
     console.log(`Updating via hypermedia url: ${hmUrl}`);
     return apiRequest({
-        url: `${hmUrl}`,
+        url: hmUrl,
         method: 'PUT',
         body: budget
     });
@@ -49,6 +49,15 @@ export const updateBudgetHM = async (hmUrl, budget) => {
 export const addBudget = async (budget) => {
     return apiRequest({
         url: apiUrl,
+        method: 'POST',
+        body: budget
+    });
+};
+
+export const addBudgetHM = async (hmUrl, budget) => {
+    console.log(`Adding via hypermedia url: ${hmUrl}`);
+    return apiRequest({
+        url: hmUrl,
         method: 'POST',
         body: budget
     });

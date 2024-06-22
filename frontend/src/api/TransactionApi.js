@@ -23,7 +23,7 @@ export const deleteTransaction = async (id) => {
 export const deleteTransactionHM = async (hmUrl) => {
     console.log(`Deleting via hypermedia url: ${hmUrl}`);
     return apiRequest({
-        url: `${hmUrl}`,
+        url: hmUrl,
         method: 'DELETE',
         contentType: null
     });
@@ -40,7 +40,7 @@ export const updateTransaction = async (transactionId, transaction) => {
 export const updateTransactionHM = async (hmUrl, transaction) => {
     console.log(`Updating via hypermedia url: ${hmUrl}`);
     return apiRequest({
-        url: `${hmUrl}`,
+        url: hmUrl,
         method: 'PUT',
         body: transaction
     });
@@ -49,6 +49,15 @@ export const updateTransactionHM = async (hmUrl, transaction) => {
 export const addTransaction = async (transaction) => {
     return apiRequest({
         url: apiUrl,
+        method: 'POST',
+        body: transaction
+    });
+};
+
+export const addTransactionHM = async (hmUrl, transaction) => {
+    console.log(`Adding via hypermedia url: ${hmUrl}`);
+    return apiRequest({
+        url: hmUrl,
         method: 'POST',
         body: transaction
     });

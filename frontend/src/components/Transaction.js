@@ -7,7 +7,9 @@ import {
     deleteTransaction,
     updateTransaction,
     addTransaction,
-    updateTransactionHM, deleteTransactionHM
+    updateTransactionHM,
+    deleteTransactionHM,
+    addTransactionHM
 } from '../api/TransactionApi';
 import {fetchCategories} from '../api/CategoryApi';
 import TransactionForm from '../components/TransactionForm';
@@ -16,7 +18,7 @@ import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
 import {format} from 'date-fns';
-import {getHyperMediaLink} from "../api/HyperMedia";
+import {getHyperMediaAddLink, getHyperMediaLink} from "../api/HyperMedia";
 import Pager from '../components/Pager';
 
 function useQuery() {
@@ -102,7 +104,12 @@ function Transaction() {
                 }
                 setToastMessage('Transaction updated successfully.');
             } else {
-                await addTransaction(transactionData);
+                const hmAddLink = getHyperMediaAddLink(navs);
+                if (hmAddLink) {
+                    await addTransactionHM(hmAddLink, transactionData);
+                } else {
+                    await addTransaction(transactionData);
+                }
                 setToastMessage('Transaction added successfully.');
             }
             await loadTransactions();
@@ -134,7 +141,8 @@ function Transaction() {
             currency: transaction.currency,
             description: transaction.description,
             tags: transaction.tags,
-            primaryCategoryId: transaction.primaryCategoryId
+            primaryCategoryId: transaction.primaryCategoryId,
+            _links: transaction._links,
         });
         setShowAddForm(true);
     };
@@ -178,9 +186,11 @@ function Transaction() {
         <Container className="mt-3">
             <Row>
                 <Col md={12} className="d-flex justify-content-end">
-                    <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
-                        Add
-                    </Button>
+                    {navs?.add.href && (
+                        <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
+                            Add
+                        </Button>
+                    )}
                     <Button href="http://localhost:5000/generate/report/transactions" variant="outline-dark"
                             className="my-3 btn-sm">
                         Export

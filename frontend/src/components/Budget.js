@@ -2,14 +2,22 @@ import React, {useState, useEffect, useContext, useCallback} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
 import {useNavigate, useLocation} from 'react-router-dom';
 import {ApiKeyContext} from '../ApiKeyProvider';
-import {fetchBudgets, deleteBudget, updateBudget, addBudget, deleteBudgetHM, updateBudgetHM} from '../api/BudgetApi';
+import {
+    fetchBudgets,
+    deleteBudget,
+    updateBudget,
+    addBudget,
+    deleteBudgetHM,
+    updateBudgetHM,
+    addBudgetHM
+} from '../api/BudgetApi';
 import {fetchCategories} from '../api/CategoryApi';
 import BudgetForm from '../components/BudgetForm';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
-import {getHyperMediaLink} from "../api/HyperMedia";
+import {getHyperMediaAddLink, getHyperMediaLink} from "../api/HyperMedia";
 import Pager from '../components/Pager';
 
 function useQuery() {
@@ -70,7 +78,7 @@ function Budget() {
             title: '',
             description: '',
             amount: '',
-            currency: 'BDT',
+            currency: 'EUR',
             categoryId: '',
         };
     }
@@ -92,7 +100,12 @@ function Budget() {
                 }
                 setToastMessage('Budget updated successfully.');
             } else {
-                await addBudget(budgetData);
+                const hmAddLink = getHyperMediaAddLink(navs);
+                if (hmAddLink) {
+                    await addBudgetHM(hmAddLink, budgetData);
+                } else {
+                    await addBudget(budgetData);
+                }
                 setToastMessage('Budget added successfully.');
             }
             await loadBudgets();
@@ -166,9 +179,11 @@ function Budget() {
         <Container className="mt-3">
             <Row>
                 <Col md={12} className="d-flex justify-content-end">
-                    <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
-                        Add
-                    </Button>
+                    {navs?.add.href && (
+                        <Button variant="primary" className="my-3 me-2 btn-sm" onClick={handleShowAddForm}>
+                            Add
+                        </Button>
+                    )}
                     <Button href="http://localhost:5000/generate/report/budgets" variant="outline-dark"
                             className="my-3 btn-sm">
                         Export

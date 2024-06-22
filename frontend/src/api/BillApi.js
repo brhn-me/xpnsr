@@ -5,7 +5,9 @@ import {apiRequest} from "./ApiRequest";
 
 const apiUrl = '/api/bills';
 
-export const fetchBills = async (page = 0, size = 20) => {
+export const fetchBills = async (page = 1, size = 20) => {
+    // api page no starts with zero
+    page = page - 1;
     const response = await apiRequest({
         url: `${apiUrl}/?page=${page}&size=${size}`,
         method: 'GET'

@@ -1,5 +1,3 @@
-// Bill.js
-
 import React, {useState, useEffect, useContext, useCallback} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
 import {useNavigate, useLocation} from 'react-router-dom';
@@ -12,6 +10,7 @@ import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
 import {getHyperMediaLink} from "../api/HyperMedia";
+import Pager from '../components/Pager';
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);
@@ -28,6 +27,8 @@ function Bill() {
         data: bills,
         loading: billsLoading,
         error: billsError,
+        navs,
+        page: pageInfo,
         reload: loadBills
     } = useFetchData(fetchBillsForPage, [isAuthenticated, fetchBillsForPage]);
     const {
@@ -211,20 +212,12 @@ function Bill() {
                                 ))}
                                 </tbody>
                             </Table>
-                            <div className="d-flex justify-content-center mt-3">
-                                <ButtonGroup>
-                                    <Button
-                                        variant="secondary"
-                                        disabled={page <= 1}
-                                        onClick={() => handlePageChange(page - 1)}
-                                    >
-                                        Previous
-                                    </Button>
-                                    <Button variant="secondary" onClick={() => handlePageChange(page + 1)}>
-                                        Next
-                                    </Button>
-                                </ButtonGroup>
-                            </div>
+                            <Row>
+                                <div className="d-flex justify-content-center mt-3 mb-5">
+                                    <Pager navs={navs}/>
+                                </div>
+                            </Row>
+
                         </>
                     ) : (
                         <Alert key='info' variant='info'>

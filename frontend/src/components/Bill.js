@@ -1,7 +1,8 @@
 // Bill.js
 
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect, useContext, useCallback} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
+import {useNavigate, useLocation} from 'react-router-dom';
 import {ApiKeyContext} from '../ApiKeyProvider';
 import {fetchBills, deleteBill, updateBill, addBill, updateBillHM, deleteBillHM} from '../api/BillApi';
 import {fetchCategories} from '../api/CategoryApi';
@@ -12,14 +13,23 @@ import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
 import {getHyperMediaLink} from "../api/HyperMedia";
 
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
+
 function Bill() {
     const {isAuthenticated} = useContext(ApiKeyContext);
+    const query = useQuery();
+    const page = parseInt(query.get('page')) || 1;
+    const navigate = useNavigate();
+
+    const fetchBillsForPage = useCallback(() => fetchBills(page), [page]);
     const {
         data: bills,
         loading: billsLoading,
         error: billsError,
         reload: loadBills
-    } = useFetchData(fetchBills, [isAuthenticated]);
+    } = useFetchData(fetchBillsForPage, [isAuthenticated, fetchBillsForPage]);
     const {
         data: categories,
         error: categoriesError,
@@ -144,6 +154,10 @@ function Bill() {
         setShowToast(true);
     };
 
+    const handlePageChange = (newPage) => {
+        navigate(`?page=${newPage}`);
+    };
+
     return (
         <Container className="mt-3">
             <Row>
@@ -163,37 +177,55 @@ function Bill() {
                     {billsLoading ? (
                         <Spinner animation="border"/>
                     ) : bills.length > 0 ? (
-                        <Table striped bordered hover>
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Tenure</th>
-                                <th>Amount</th>
-                                <th>Category</th>
-                                <th style={{width: '120px'}}>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {bills.map((bill) => (
-                                <tr key={bill.id}>
-                                    <td>{bill.id}</td>
-                                    <td>{bill.tenure}</td>
-                                    <td>{bill.amount}</td>
-                                    <td>{categoryMap[bill.categoryId]}</td>
-                                    <td>
-                                        <ButtonGroup size="sm">
-                                            <Button variant="outline-primary" onClick={() => handleShowEditForm(bill)}>
-                                                Edit
-                                            </Button>
-                                            <Button variant="outline-danger" onClick={() => confirmDeleteBill(bill)}>
-                                                Delete
-                                            </Button>
-                                        </ButtonGroup>
-                                    </td>
+                        <>
+                            <Table striped bordered hover>
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tenure</th>
+                                    <th>Amount</th>
+                                    <th>Category</th>
+                                    <th style={{width: '120px'}}>Actions</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </Table>
+                                </thead>
+                                <tbody>
+                                {bills.map((bill) => (
+                                    <tr key={bill.id}>
+                                        <td>{bill.id}</td>
+                                        <td>{bill.tenure}</td>
+                                        <td>{bill.amount}</td>
+                                        <td>{categoryMap[bill.categoryId]}</td>
+                                        <td>
+                                            <ButtonGroup size="sm">
+                                                <Button variant="outline-primary"
+                                                        onClick={() => handleShowEditForm(bill)}>
+                                                    Edit
+                                                </Button>
+                                                <Button variant="outline-danger"
+                                                        onClick={() => confirmDeleteBill(bill)}>
+                                                    Delete
+                                                </Button>
+                                            </ButtonGroup>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </Table>
+                            <div className="d-flex justify-content-center mt-3">
+                                <ButtonGroup>
+                                    <Button
+                                        variant="secondary"
+                                        disabled={page <= 1}
+                                        onClick={() => handlePageChange(page - 1)}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <Button variant="secondary" onClick={() => handlePageChange(page + 1)}>
+                                        Next
+                                    </Button>
+                                </ButtonGroup>
+                            </div>
+                        </>
                     ) : (
                         <Alert key='info' variant='info'>
                             No bills available.

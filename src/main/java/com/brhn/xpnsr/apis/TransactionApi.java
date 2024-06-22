@@ -183,6 +183,9 @@ public class TransactionApi {
         Link addTransactionLink = linkTo(methodOn(TransactionApi.class).add(null)).withRel("add").withType("POST");
         customPagedModel.add(addTransactionLink);
 
+        Link schemaLink = linkTo(methodOn(TransactionApi.class).getTransactionSchema()).withRel("schema").withType("GET");
+        customPagedModel.add(schemaLink);
+
         return ResponseEntity.ok(customPagedModel);
     }
 

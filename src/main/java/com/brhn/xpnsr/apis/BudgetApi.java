@@ -1,6 +1,7 @@
 package com.brhn.xpnsr.apis;
 
 import com.brhn.xpnsr.exceptions.NotFoundError;
+import com.brhn.xpnsr.models.Budget;
 import com.brhn.xpnsr.services.BudgetService;
 import com.brhn.xpnsr.services.dtos.BudgetDTO;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
@@ -181,6 +182,9 @@ public class BudgetApi {
 
         Link addBudgetLink = linkTo(methodOn(BudgetApi.class).createBudget(null)).withRel("add").withType("POST");
         customPagedModel.add(addBudgetLink);
+
+        Link schemaLink = linkTo(methodOn(BudgetApi.class).getBudgetSchema()).withRel("schema").withType("GET");
+        customPagedModel.add(schemaLink);
 
         return ResponseEntity.ok(customPagedModel);
     }

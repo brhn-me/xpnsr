@@ -186,6 +186,9 @@ public class CategoryApi {
         Link addCategoryLink = linkTo(methodOn(CategoryApi.class).add(null)).withRel("add").withType("POST");
         customPagedModel.add(addCategoryLink);
 
+        Link schemaLink = linkTo(methodOn(CategoryApi.class).getCategorySchema()).withRel("schema").withType("GET");
+        customPagedModel.add(schemaLink);
+
         return ResponseEntity.ok(customPagedModel);
     }
 

@@ -133,6 +133,9 @@ public class BillApi {
         Link addBillLink = linkTo(methodOn(BillApi.class).createBill(null)).withRel("add").withType("POST");
         customPagedModel.add(addBillLink);
 
+        Link schemaLink = linkTo(methodOn(BillApi.class).getBillSchema()).withRel("schema").withType("GET");
+        customPagedModel.add(schemaLink);
+
         return ResponseEntity.ok(customPagedModel);
     }
 

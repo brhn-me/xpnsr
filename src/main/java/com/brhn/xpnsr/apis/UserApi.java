@@ -188,6 +188,9 @@ public class UserApi {
         Link addUserLink = linkTo(methodOn(UserApi.class).createUser(null)).withRel("add").withType("POST");
         customPagedModel.add(addUserLink);
 
+        Link schemaLink = linkTo(methodOn(UserApi.class).getUserSchema()).withRel("schema").withType("GET");
+        customPagedModel.add(schemaLink);
+
         return ResponseEntity.ok(customPagedModel);
     }
 

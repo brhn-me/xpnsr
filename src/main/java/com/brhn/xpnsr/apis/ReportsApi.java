@@ -74,10 +74,12 @@ public class ReportsApi {
     @GetMapping
     public ResponseEntity<LinksDTO> getReportsRoot() {
         LinksDTO reportsRoot = new LinksDTO();
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport(TransactionType.EXPENSE)).withRel("monthly-expenses"));
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport(TransactionType.EARNING)).withRel("monthly-earnings"));
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport(TransactionType.EXPENSE)).withRel("yearly-expenses"));
-        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport(TransactionType.EARNING)).withRel("yearly-earnings"));
+
+        // IANA Links
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport(TransactionType.EXPENSE)).withRel("monthly-expenses").withType("GET"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getMonthlyReport(TransactionType.EARNING)).withRel("monthly-earnings").withType("GET"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport(TransactionType.EXPENSE)).withRel("yearly-expenses").withType("GET"));
+        reportsRoot.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getYearlyReport(TransactionType.EARNING)).withRel("yearly-earnings").withType("GET"));
 
         return ResponseEntity.ok(reportsRoot);
     }

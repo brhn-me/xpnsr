@@ -4,6 +4,7 @@ import com.brhn.xpnsr.services.BillService;
 import com.brhn.xpnsr.services.dtos.BillDTO;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
+import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +21,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -42,17 +44,20 @@ public class BillApi {
 
     private final BillService billService;
     private final PagedResourcesAssembler<BillDTO> pagedResourcesAssembler;
+    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructor for BillApi.
      *
      * @param billService             The service used to manage bills.
      * @param pagedResourcesAssembler The assembler used for pagination of BillDTOs.
+     * @param schemaGeneratorUtil     The utility for generating JSON schemas.
      */
     @Autowired
-    public BillApi(BillService billService, PagedResourcesAssembler<BillDTO> pagedResourcesAssembler) {
+    public BillApi(BillService billService, PagedResourcesAssembler<BillDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
         this.billService = billService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -62,23 +67,7 @@ public class BillApi {
      * @return ResponseEntity containing the created BillDTO.
      */
     @PostMapping("/")
-    @Operation(summary = "Create a new bill", description = "Adds a new bill to the system.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Details of the new bill",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BillDTO.class),
-                            examples = @ExampleObject(value = "{\"tenure\": 12, \"amount\": 100.00, \"categoryId\": \"groceries\"}")
-                    )
-            ),
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Bill created successfully",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = BillDTO.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid input data"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-                    @ApiResponse(responseCode = "404", description = "Category not found"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error")
-            })
+    @Operation(summary = "Create a new bill", description = "Adds a new bill to the system.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Details of the new bill", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BillDTO.class), examples = @ExampleObject(value = "{\"tenure\": 12, \"amount\": 100.00, \"categoryId\": \"groceries\"}"))), responses = {@ApiResponse(responseCode = "201", description = "Bill created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BillDTO.class))), @ApiResponse(responseCode = "400", description = "Invalid input data"), @ApiResponse(responseCode = "401", description = "Unauthorized access"), @ApiResponse(responseCode = "404", description = "Category not found"), @ApiResponse(responseCode = "500", description = "Internal server error")})
     public ResponseEntity<EntityModel<BillDTO>> createBill(@Valid @RequestBody BillDTO b) {
         BillDTO billDTO = billService.createBill(b);
         EntityModel<BillDTO> entityModel = EntityModel.of(billDTO);
@@ -95,25 +84,8 @@ public class BillApi {
      * @return ResponseEntity containing the updated BillDTO.
      */
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing bill", description = "Updates details of an existing bill by ID.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Updated details of the bill",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BillDTO.class),
-                            examples = @ExampleObject(value = "{\"tenure\": 12, \"amount\": 150.00, \"categoryId\": \"groceries\"}")
-                    )
-            ),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Bill updated successfully",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = BillDTO.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid input data"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-                    @ApiResponse(responseCode = "404", description = "Bill or category not found"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error")
-            })
-    public ResponseEntity<EntityModel<BillDTO>> updateBill(@PathVariable @Parameter(description = "ID of the bill to be updated") Long id,
-                                                           @Valid @RequestBody BillDTO bill) {
+    @Operation(summary = "Update an existing bill", description = "Updates details of an existing bill by ID.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Updated details of the bill", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BillDTO.class), examples = @ExampleObject(value = "{\"tenure\": 12, \"amount\": 150.00, \"categoryId\": \"groceries\"}"))), responses = {@ApiResponse(responseCode = "200", description = "Bill updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BillDTO.class))), @ApiResponse(responseCode = "400", description = "Invalid input data"), @ApiResponse(responseCode = "401", description = "Unauthorized access"), @ApiResponse(responseCode = "404", description = "Bill or category not found"), @ApiResponse(responseCode = "500", description = "Internal server error")})
+    public ResponseEntity<EntityModel<BillDTO>> updateBill(@PathVariable @Parameter(description = "ID of the bill to be updated") Long id, @Valid @RequestBody BillDTO bill) {
         BillDTO updatedBill = billService.updateBill(id, bill);
 
         EntityModel<BillDTO> entityModel = EntityModel.of(updatedBill);
@@ -129,15 +101,7 @@ public class BillApi {
      * @return ResponseEntity containing the retrieved BillDTO.
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Get a bill by ID", description = "Retrieves a bill's details by its ID.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Bill found",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = BillDTO.class))),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-                    @ApiResponse(responseCode = "404", description = "Bill not found"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error")
-            })
+    @Operation(summary = "Get a bill by ID", description = "Retrieves a bill's details by its ID.", responses = {@ApiResponse(responseCode = "200", description = "Bill found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BillDTO.class))), @ApiResponse(responseCode = "401", description = "Unauthorized access"), @ApiResponse(responseCode = "404", description = "Bill not found"), @ApiResponse(responseCode = "500", description = "Internal server error")})
     public ResponseEntity<EntityModel<BillDTO>> getBillById(@PathVariable Long id) {
         BillDTO billDTO = billService.getBillById(id);
 
@@ -154,15 +118,7 @@ public class BillApi {
      * @return ResponseEntity containing a paginated list of BillDTOs.
      */
     @GetMapping("/")
-    @Operation(summary = "List all bills", description = "Retrieves a paginated list of all bills.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Bills retrieved",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = CustomPagedModel.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error")
-            })
+    @Operation(summary = "List all bills", description = "Retrieves a paginated list of all bills.", responses = {@ApiResponse(responseCode = "200", description = "Bills retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomPagedModel.class))), @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"), @ApiResponse(responseCode = "401", description = "Unauthorized access"), @ApiResponse(responseCode = "500", description = "Internal server error")})
     public ResponseEntity<CustomPagedModel<BillDTO>> getAllBills(@ParameterObject Pageable pageable) {
         Page<BillDTO> billsPage = billService.getAllBills(pageable);
         PagedModel<EntityModel<BillDTO>> pagedModel = pagedResourcesAssembler.toModel(billsPage, billDTO -> {
@@ -171,9 +127,11 @@ public class BillApi {
             return entityModel;
         });
 
-        CustomPagedModel<BillDTO> customPagedModel = new CustomPagedModel<>(pagedModel.getContent(),
-                pagedModel.getMetadata());
+        CustomPagedModel<BillDTO> customPagedModel = new CustomPagedModel<>(pagedModel.getContent(), pagedModel.getMetadata());
         customPagedModel.addLinks(pagedModel.getLinks());
+
+        Link addBillLink = linkTo(methodOn(BillApi.class).createBill(null)).withRel("add").withType("POST");
+        customPagedModel.add(addBillLink);
 
         return ResponseEntity.ok(customPagedModel);
     }
@@ -185,18 +143,12 @@ public class BillApi {
      * @return ResponseEntity containing links to the list of bills.
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a bill", description = "Deletes a bill by its ID.",
-            responses = {
-                    @ApiResponse(responseCode = "204", description = "Bill deleted successfully"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
-                    @ApiResponse(responseCode = "404", description = "Bill not found"),
-                    @ApiResponse(responseCode = "500", description = "Internal server error")
-            })
+    @Operation(summary = "Delete a bill", description = "Deletes a bill by its ID.", responses = {@ApiResponse(responseCode = "204", description = "Bill deleted successfully"), @ApiResponse(responseCode = "401", description = "Unauthorized access"), @ApiResponse(responseCode = "404", description = "Bill not found"), @ApiResponse(responseCode = "500", description = "Internal server error")})
     public ResponseEntity<LinksDTO> deleteBill(@PathVariable @Parameter(description = "ID of the bill to delete") Long id) {
         billService.deleteBill(id);
 
         LinksDTO linksDTO = new LinksDTO();
-        linksDTO.add(linkTo(methodOn(BillApi.class).getAllBills(Pageable.unpaged())).withRel("bills"));
+        linksDTO.add(linkTo(methodOn(BillApi.class).getAllBills(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
 
         return ResponseEntity.ok(linksDTO);
     }
@@ -209,9 +161,27 @@ public class BillApi {
     private void addDetailLinks(EntityModel<BillDTO> entityModel) {
         BillDTO billDTO = entityModel.getContent();
         Long billId = Objects.requireNonNull(billDTO).getId();
-        entityModel.add(linkTo(methodOn(BillApi.class).getBillById(billId)).withSelfRel());
-        entityModel.add(linkTo(methodOn(BillApi.class).updateBill(billId, billDTO)).withRel("edit"));
-        entityModel.add(linkTo(methodOn(BillApi.class).deleteBill(billId)).withRel("delete"));
-        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(billDTO.getCategoryId())).withRel("category"));
+
+        // IANA Links
+        entityModel.add(linkTo(methodOn(BillApi.class).getBillById(billId)).withSelfRel().withType("GET"));
+        entityModel.add(linkTo(methodOn(BillApi.class).getAllBills(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
+        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(billDTO.getCategoryId())).withRel("category").withType("GET"));
+
+        // Control Links
+        entityModel.add(linkTo(methodOn(BillApi.class).updateBill(billId, billDTO)).withRel("edit").withType("PUT"));
+        entityModel.add(linkTo(methodOn(BillApi.class).deleteBill(billId)).withRel("delete").withType("DELETE"));
+        entityModel.add(linkTo(methodOn(BillApi.class).getBillSchema()).withRel("schema").withType("GET"));
+    }
+
+    /**
+     * Retrieves the JSON schema for BillDTO.
+     *
+     * @return ResponseEntity containing the JSON schema for BillDTO.
+     */
+    @GetMapping("/schema")
+    @Operation(summary = "Get schema for BillDTO", description = "Retrieves the JSON schema for BillDTO.")
+    public ResponseEntity<String> getBillSchema() {
+        String schema = schemaGeneratorUtil.generateSchema(BillDTO.class);
+        return ResponseEntity.ok(schema);
     }
 }

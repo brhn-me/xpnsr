@@ -6,6 +6,7 @@ import com.brhn.xpnsr.services.UserService;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
 import com.brhn.xpnsr.services.dtos.UserDTO;
+import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +23,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +35,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * REST controller for managing users in the XPNSR application.
- * Provides endpoints for creating, updating, retrieving, listing, and deleting users.
+ * Provides endpoints for creating, updating, retrieving, and deleting users.
  */
 @CrossOrigin(origins = "*")
 @RestController
@@ -44,17 +46,20 @@ public class UserApi {
 
     private final UserService userService;
     private final PagedResourcesAssembler<UserDTO> pagedResourcesAssembler;
+    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructs a new UserApi instance with the specified UserService.
      *
-     * @param userService the service for handling user operations
+     * @param userService             the service for handling user operations
      * @param pagedResourcesAssembler the assembler used for pagination of UserDTOs
+     * @param schemaGeneratorUtil     the utility for generating JSON schemas
      */
     @Autowired
-    public UserApi(UserService userService, PagedResourcesAssembler<UserDTO> pagedResourcesAssembler) {
+    public UserApi(UserService userService, PagedResourcesAssembler<UserDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
         this.userService = userService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -169,11 +174,19 @@ public class UserApi {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     public ResponseEntity<CustomPagedModel<UserDTO>> getAllUsers(@ParameterObject Pageable pageable) {
-        Page<UserDTO> users = userService.list(pageable);
-        PagedModel<EntityModel<UserDTO>> pagedModel = pagedResourcesAssembler.toModel(users, this::getWithHyperMediaLinks);
+        Page<UserDTO> usersPage = userService.list(pageable);
+        PagedModel<EntityModel<UserDTO>> pagedModel = pagedResourcesAssembler.toModel(usersPage, userDTO -> {
+            EntityModel<UserDTO> entityModel = EntityModel.of(userDTO);
+            addDetailLinks(entityModel);
+            return entityModel;
+        });
 
-        CustomPagedModel<UserDTO> customPagedModel = new CustomPagedModel<>(pagedModel.getContent(), pagedModel.getMetadata());
+        CustomPagedModel<UserDTO> customPagedModel = new CustomPagedModel<>(pagedModel.getContent(),
+                pagedModel.getMetadata());
         customPagedModel.addLinks(pagedModel.getLinks());
+
+        Link addUserLink = linkTo(methodOn(UserApi.class).createUser(null)).withRel("add").withType("POST");
+        customPagedModel.add(addUserLink);
 
         return ResponseEntity.ok(customPagedModel);
     }
@@ -182,7 +195,7 @@ public class UserApi {
      * Endpoint to delete a user by ID.
      *
      * @param id the ID of the user to delete
-     * @return ResponseEntity indicating the success of the deletion operation
+     * @return ResponseEntity containing links to the list of users
      * @throws NotFoundError if the user with the specified ID is not found
      */
     @DeleteMapping("/{id}")
@@ -197,27 +210,9 @@ public class UserApi {
         userService.delete(id);
 
         LinksDTO linksDTO = new LinksDTO();
-        linksDTO.add(linkTo(methodOn(UserApi.class).getAllUsers(Pageable.unpaged())).withRel("users"));
+        linksDTO.add(linkTo(methodOn(UserApi.class).getAllUsers(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
 
         return ResponseEntity.ok(linksDTO);
-    }
-
-    /**
-     * Helper method to add hypermedia links to a UserDTO.
-     *
-     * @param userDTO the user DTO to enrich with hypermedia links
-     * @return EntityModel containing the user DTO with hypermedia links
-     */
-    private EntityModel<UserDTO> getWithHyperMediaLinks(UserDTO userDTO) {
-        EntityModel<UserDTO> entityModel = EntityModel.of(userDTO);
-
-        // Self link
-        entityModel.add(linkTo(methodOn(UserApi.class).getUserById(userDTO.getId())).withSelfRel());
-
-        // Link to retrieve all users
-        entityModel.add(linkTo(methodOn(UserApi.class).getAllUsers(Pageable.unpaged())).withRel("users"));
-
-        return entityModel;
     }
 
     /**
@@ -228,9 +223,26 @@ public class UserApi {
     private void addDetailLinks(EntityModel<UserDTO> entityModel) {
         UserDTO userDTO = entityModel.getContent();
         Long userId = Objects.requireNonNull(userDTO).getId();
-        entityModel.add(linkTo(methodOn(UserApi.class).getUserById(userId)).withSelfRel());
-        entityModel.add(linkTo(methodOn(UserApi.class).updateUser(userId, userDTO)).withRel("edit"));
-        entityModel.add(linkTo(methodOn(UserApi.class).deleteUser(userId)).withRel("delete"));
-        entityModel.add(linkTo(methodOn(UserApi.class).getAllUsers(Pageable.unpaged())).withRel("users"));
+
+        // IANA Links
+        entityModel.add(linkTo(methodOn(UserApi.class).getUserById(userId)).withSelfRel().withType("GET"));
+        entityModel.add(linkTo(methodOn(UserApi.class).getAllUsers(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
+
+        // Control Links
+        entityModel.add(linkTo(methodOn(UserApi.class).updateUser(userId, userDTO)).withRel("edit").withType("PUT"));
+        entityModel.add(linkTo(methodOn(UserApi.class).deleteUser(userId)).withRel("delete").withType("DELETE"));
+        entityModel.add(linkTo(methodOn(UserApi.class).getUserSchema()).withRel("schema").withType("GET"));
+    }
+
+    /**
+     * Retrieves the JSON schema for UserDTO.
+     *
+     * @return ResponseEntity containing the JSON schema for UserDTO.
+     */
+    @GetMapping("/schema")
+    @Operation(summary = "Get schema for UserDTO", description = "Retrieves the JSON schema for UserDTO.")
+    public ResponseEntity<String> getUserSchema() {
+        String schema = schemaGeneratorUtil.generateSchema(UserDTO.class);
+        return ResponseEntity.ok(schema);
     }
 }

@@ -5,6 +5,7 @@ import com.brhn.xpnsr.services.TransactionService;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
 import com.brhn.xpnsr.services.dtos.TransactionDTO;
+import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -32,7 +34,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * REST controller for managing transactions in the XPNSR application.
- * Provides endpoints for adding, updating, retrieving, listing, and deleting transactions.
+ * Provides endpoints for creating, updating, retrieving, and deleting transactions.
  */
 @CrossOrigin(origins = "*")
 @RestController
@@ -43,27 +45,30 @@ public class TransactionApi {
 
     private final TransactionService transactionService;
     private final PagedResourcesAssembler<TransactionDTO> pagedResourcesAssembler;
+    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructs a new TransactionApi instance with the specified TransactionService.
      *
      * @param transactionService      the service for handling transaction operations
      * @param pagedResourcesAssembler the assembler used for pagination of TransactionDTOs
+     * @param schemaGeneratorUtil     the utility for generating JSON schemas
      */
     @Autowired
-    public TransactionApi(TransactionService transactionService, PagedResourcesAssembler<TransactionDTO> pagedResourcesAssembler) {
+    public TransactionApi(TransactionService transactionService, PagedResourcesAssembler<TransactionDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
         this.transactionService = transactionService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
-     * Endpoint to add a new transaction.
+     * Creates a new transaction.
      *
-     * @param t the transaction data to be added
-     * @return ResponseEntity containing the added transaction with hypermedia links
+     * @param t the transaction data transfer object containing transaction details
+     * @return the created transaction as an entity model wrapped in a response entity
      */
     @PostMapping("/")
-    @Operation(summary = "Add a new transaction", description = "Creates a new transaction and returns the created transaction details",
+    @Operation(summary = "Create a new transaction", description = "Adds a new transaction to the system.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Details of the new transaction",
                     content = @Content(mediaType = "application/json",
@@ -81,21 +86,22 @@ public class TransactionApi {
             })
     public ResponseEntity<EntityModel<TransactionDTO>> add(@Valid @RequestBody TransactionDTO t) {
         TransactionDTO transactionDTO = transactionService.add(t);
-        EntityModel<TransactionDTO> entityModel = getWithHyperMediaLinks(transactionDTO);
+        EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO);
+        addDetailLinks(entityModel);
 
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
 
     /**
-     * Endpoint to update an existing transaction.
+     * Updates an existing transaction by ID.
      *
-     * @param id the ID of the transaction to update
-     * @param t  the updated transaction data
-     * @return ResponseEntity containing the updated transaction with hypermedia links
+     * @param id the ID of the transaction to be updated
+     * @param t  the transaction data transfer object containing updated transaction details
+     * @return ResponseEntity containing the updated transaction
      * @throws NotFoundError if the transaction with the specified ID is not found
      */
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing transaction", description = "Updates the transaction details for the given ID and returns the updated transaction details",
+    @Operation(summary = "Update an existing transaction", description = "Updates details of an existing transaction by ID.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Updated details of the transaction",
                     content = @Content(mediaType = "application/json",
@@ -114,21 +120,22 @@ public class TransactionApi {
             })
     public ResponseEntity<EntityModel<TransactionDTO>> update(@PathVariable @Parameter(description = "ID of the transaction to be updated") Long id,
                                                               @Valid @RequestBody TransactionDTO t) throws NotFoundError {
-        TransactionDTO transactionDTO = transactionService.update(id, t);
-        EntityModel<TransactionDTO> entityModel = getWithHyperMediaLinks(transactionDTO);
+        TransactionDTO updatedTransaction = transactionService.update(id, t);
+        EntityModel<TransactionDTO> entityModel = EntityModel.of(updatedTransaction);
+        addDetailLinks(entityModel);
 
         return ResponseEntity.ok(entityModel);
     }
 
     /**
-     * Endpoint to retrieve a transaction by ID.
+     * Retrieves a transaction by ID.
      *
      * @param id the ID of the transaction to retrieve
-     * @return ResponseEntity containing the retrieved transaction with hypermedia links
+     * @return ResponseEntity containing the retrieved transaction
      * @throws NotFoundError if the transaction with the specified ID is not found
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Get a transaction by ID", description = "Returns a single transaction details for the given ID",
+    @Operation(summary = "Get a transaction by ID", description = "Retrieves a transaction's details by its ID.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Transaction found",
                             content = @Content(mediaType = "application/json",
@@ -139,19 +146,20 @@ public class TransactionApi {
             })
     public ResponseEntity<EntityModel<TransactionDTO>> get(@PathVariable Long id) throws NotFoundError {
         TransactionDTO transactionDTO = transactionService.get(id);
-        EntityModel<TransactionDTO> entityModel = getWithHyperMediaLinks(transactionDTO);
+        EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO);
+        addDetailLinks(entityModel);
 
         return ResponseEntity.ok(entityModel);
     }
 
     /**
-     * Endpoint to retrieve all transactions with pagination.
+     * Retrieves a paginated list of all transactions.
      *
-     * @param pageable pagination information
-     * @return ResponseEntity containing a page of transactions with hypermedia links
+     * @param pageable the pagination information
+     * @return ResponseEntity containing a paginated list of TransactionDTOs
      */
     @GetMapping("/")
-    @Operation(summary = "Get all transactions with pagination", description = "Returns a list of all transactions, with pagination support",
+    @Operation(summary = "List all transactions", description = "Retrieves a paginated list of all transactions.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Transactions retrieved",
                             content = @Content(mediaType = "application/json",
@@ -161,24 +169,32 @@ public class TransactionApi {
                     @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     public ResponseEntity<CustomPagedModel<TransactionDTO>> getAll(@ParameterObject Pageable pageable) {
-        Page<TransactionDTO> transactions = transactionService.getAll(pageable);
-        PagedModel<EntityModel<TransactionDTO>> pagedModel = pagedResourcesAssembler.toModel(transactions, this::getWithHyperMediaLinks);
+        Page<TransactionDTO> transactionsPage = transactionService.getAll(pageable);
+        PagedModel<EntityModel<TransactionDTO>> pagedModel = pagedResourcesAssembler.toModel(transactionsPage, transactionDTO -> {
+            EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO);
+            addDetailLinks(entityModel);
+            return entityModel;
+        });
 
-        CustomPagedModel<TransactionDTO> customPagedModel = new CustomPagedModel<>(pagedModel.getContent(), pagedModel.getMetadata());
+        CustomPagedModel<TransactionDTO> customPagedModel = new CustomPagedModel<>(pagedModel.getContent(),
+                pagedModel.getMetadata());
         customPagedModel.addLinks(pagedModel.getLinks());
+
+        Link addTransactionLink = linkTo(methodOn(TransactionApi.class).add(null)).withRel("add").withType("POST");
+        customPagedModel.add(addTransactionLink);
 
         return ResponseEntity.ok(customPagedModel);
     }
 
     /**
-     * Endpoint to delete a transaction by ID.
+     * Deletes a transaction by its ID.
      *
      * @param id the ID of the transaction to delete
-     * @return ResponseEntity indicating the success of the deletion operation
-     * @throws NotFoundError if the transaction with the specified ID is not found
+     * @return ResponseEntity containing links to the list of transactions
+     * @throws NotFoundError if the transaction with the given ID is not found
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a transaction by ID", description = "Deletes a transaction for the given ID",
+    @Operation(summary = "Delete a transaction", description = "Deletes a transaction by its ID.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "Transaction deleted successfully"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized access"),
@@ -189,44 +205,40 @@ public class TransactionApi {
         transactionService.delete(id);
 
         LinksDTO linksDTO = new LinksDTO();
-        linksDTO.add(linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel("transactions"));
+        linksDTO.add(linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
 
         return ResponseEntity.ok(linksDTO);
     }
 
     /**
-     * Helper method to add hypermedia links to a TransactionDTO.
+     * Adds detailed links to the given EntityModel.
      *
-     * @param transactionDTO the transaction DTO to enrich with hypermedia links
-     * @return EntityModel containing the transaction DTO with hypermedia links
+     * @param entityModel The EntityModel to which links are added.
      */
-    private EntityModel<TransactionDTO> getWithHyperMediaLinks(TransactionDTO transactionDTO) {
-        EntityModel<TransactionDTO> entityModel = EntityModel.of(transactionDTO);
+    private void addDetailLinks(EntityModel<TransactionDTO> entityModel) {
+        TransactionDTO transactionDTO = entityModel.getContent();
+        Long transactionId = Objects.requireNonNull(transactionDTO).getId();
+        // IANA Links
+        entityModel.add(linkTo(methodOn(TransactionApi.class).get(transactionId)).withSelfRel().withType("GET"));
+        entityModel.add(linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
+        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(transactionDTO.getPrimaryCategoryId())).withRel("primaryCategory").withType("GET"));
+        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(transactionDTO.getSecondaryCategoryId())).withRel("secondaryCategory").withType("GET"));
 
-        // Self link
-        entityModel.add(linkTo(methodOn(TransactionApi.class).get(transactionDTO.getId())).withSelfRel());
+        // Control Links
+        entityModel.add(linkTo(methodOn(TransactionApi.class).update(transactionId, transactionDTO)).withRel("edit").withType("PUT"));
+        entityModel.add(linkTo(methodOn(TransactionApi.class).delete(transactionId)).withRel("delete").withType("DELETE"));
+        entityModel.add(linkTo(methodOn(TransactionApi.class).getTransactionSchema()).withRel("schema").withType("GET"));
+    }
 
-        // Edit link
-        entityModel.add(linkTo(methodOn(TransactionApi.class).update(transactionDTO.getId(), transactionDTO)).withRel("edit"));
-
-        // Delete link
-        entityModel.add(linkTo(methodOn(TransactionApi.class).delete(transactionDTO.getId())).withRel("delete"));
-
-        // Link to primary category (if exists)
-        if (transactionDTO.getPrimaryCategoryId() != null) {
-            entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(transactionDTO.getPrimaryCategoryId()))
-                    .withRel("primaryCategory"));
-        }
-
-        // Link to secondary category (if exists)
-        if (transactionDTO.getSecondaryCategoryId() != null) {
-            entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(transactionDTO.getSecondaryCategoryId()))
-                    .withRel("secondaryCategory"));
-        }
-
-        // Link to retrieve all transactions
-        entityModel.add(linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel("transactions"));
-
-        return entityModel;
+    /**
+     * Retrieves the JSON schema for TransactionDTO.
+     *
+     * @return ResponseEntity containing the JSON schema for TransactionDTO.
+     */
+    @GetMapping("/schema")
+    @Operation(summary = "Get schema for TransactionDTO", description = "Retrieves the JSON schema for TransactionDTO.")
+    public ResponseEntity<String> getTransactionSchema() {
+        String schema = schemaGeneratorUtil.generateSchema(TransactionDTO.class);
+        return ResponseEntity.ok(schema);
     }
 }

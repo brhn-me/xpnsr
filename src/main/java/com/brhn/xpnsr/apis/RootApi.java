@@ -26,12 +26,12 @@ public class RootApi {
     @GetMapping
     public ResponseEntity<LinksDTO> getRootLinks() {
         LinksDTO rootDTO = new LinksDTO();
-        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(BillApi.class).getAllBills(Pageable.unpaged())).withRel("bills"));
-        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel("budgets"));
-        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(CategoryApi.class).getAllCategories(Pageable.unpaged())).withRel("categories"));
-        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel("transactions"));
-        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(UserApi.class).getAllUsers(Pageable.unpaged())).withRel("users"));
-        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getReportsRoot()).withRel("reports"));
+        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(BillApi.class).getAllBills(Pageable.unpaged())).withRel("bills").withType("GET"));
+        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel("budgets").withType("GET"));
+        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(CategoryApi.class).getAllCategories(Pageable.unpaged())).withRel("categories").withType("GET"));
+        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(TransactionApi.class).getAll(Pageable.unpaged())).withRel("transactions").withType("GET"));
+        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(UserApi.class).getAllUsers(Pageable.unpaged())).withRel("users").withType("GET"));
+        rootDTO.add(WebMvcLinkBuilder.linkTo(methodOn(ReportsApi.class).getReportsRoot()).withRel("reports").withType("GET"));
 
         return ResponseEntity.ok(rootDTO);
     }

@@ -6,6 +6,7 @@ import com.brhn.xpnsr.services.CategoryService;
 import com.brhn.xpnsr.services.dtos.CategoryDTO;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
+import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -44,17 +46,20 @@ public class CategoryApi {
 
     private final CategoryService categoryService;
     private final PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler;
+    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructs a new CategoryApi instance with the specified CategoryService.
      *
      * @param categoryService         the service for handling category operations
      * @param pagedResourcesAssembler the assembler used for pagination of CategoryDTOs
+     * @param schemaGeneratorUtil     the utility for generating JSON schemas
      */
     @Autowired
-    public CategoryApi(CategoryService categoryService, PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler) {
+    public CategoryApi(CategoryService categoryService, PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
         this.categoryService = categoryService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -65,7 +70,7 @@ public class CategoryApi {
      * @throws BadRequestError if the request is invalid
      */
     @PostMapping("/")
-    @Operation(summary = "Add a new category", description = "Creates a new category and returns the created category details",
+    @Operation(summary = "Create a new category", description = "Adds a new category to the system.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Details of the new category",
                     content = @Content(mediaType = "application/json",
@@ -99,7 +104,7 @@ public class CategoryApi {
      * @throws BadRequestError if the request is invalid
      */
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing category", description = "Updates the category details for the given ID and returns the updated category details",
+    @Operation(summary = "Update an existing category", description = "Updates details of an existing category by ID.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Updated details of the category",
                     content = @Content(mediaType = "application/json",
@@ -133,7 +138,7 @@ public class CategoryApi {
      * @throws NotFoundError if the category with the given ID is not found
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Get a category by ID", description = "Returns a single category details for the given ID",
+    @Operation(summary = "Get a category by ID", description = "Retrieves a category's details by its ID.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Category found",
                             content = @Content(mediaType = "application/json",
@@ -157,7 +162,7 @@ public class CategoryApi {
      * @return a paginated list of categories as entity models wrapped in a response entity
      */
     @GetMapping("/")
-    @Operation(summary = "List all categories", description = "Returns a list of all categories, with pagination support",
+    @Operation(summary = "List all categories", description = "Retrieves a paginated list of all categories.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Categories retrieved",
                             content = @Content(mediaType = "application/json",
@@ -178,6 +183,9 @@ public class CategoryApi {
                 pagedModel.getMetadata());
         customPagedModel.addLinks(pagedModel.getLinks());
 
+        Link addCategoryLink = linkTo(methodOn(CategoryApi.class).add(null)).withRel("add").withType("POST");
+        customPagedModel.add(addCategoryLink);
+
         return ResponseEntity.ok(customPagedModel);
     }
 
@@ -189,7 +197,7 @@ public class CategoryApi {
      * @throws NotFoundError if the category with the given ID does not exist
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a category by ID", description = "Deletes a category for the given ID",
+    @Operation(summary = "Delete a category by ID", description = "Deletes a category by its ID.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "Category deleted successfully"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized access"),
@@ -200,7 +208,7 @@ public class CategoryApi {
         categoryService.delete(id);
 
         LinksDTO linksDTO = new LinksDTO();
-        linksDTO.add(linkTo(methodOn(CategoryApi.class).getAllCategories(Pageable.unpaged())).withRel("categories"));
+        linksDTO.add(linkTo(methodOn(CategoryApi.class).getAllCategories(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
 
         return ResponseEntity.ok(linksDTO);
     }
@@ -213,9 +221,27 @@ public class CategoryApi {
     private void addDetailLinks(EntityModel<CategoryDTO> entityModel) {
         CategoryDTO categoryDTO = entityModel.getContent();
         String categoryId = Objects.requireNonNull(categoryDTO).getId();
-        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(categoryId)).withSelfRel());
-        entityModel.add(linkTo(methodOn(CategoryApi.class).update(categoryId, categoryDTO)).withRel("edit"));
-        entityModel.add(linkTo(methodOn(CategoryApi.class).delete(categoryId)).withRel("delete"));
-        entityModel.add(linkTo(methodOn(CategoryApi.class).getAllCategories(Pageable.unpaged())).withRel("categories"));
+
+        // IANA Links
+        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(categoryId)).withSelfRel().withType("GET"));
+        entityModel.add(linkTo(methodOn(CategoryApi.class).getAllCategories(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType(
+                "GET"));
+
+        // Control Links
+        entityModel.add(linkTo(methodOn(CategoryApi.class).update(categoryId, categoryDTO)).withRel("edit").withType("PUT"));
+        entityModel.add(linkTo(methodOn(CategoryApi.class).delete(categoryId)).withRel("delete").withType("DELETE"));
+        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategorySchema()).withRel("schema").withType("GET"));
+    }
+
+    /**
+     * Retrieves the JSON schema for CategoryDTO.
+     *
+     * @return ResponseEntity containing the JSON schema for CategoryDTO.
+     */
+    @GetMapping("/schema")
+    @Operation(summary = "Get schema for CategoryDTO", description = "Retrieves the JSON schema for CategoryDTO.")
+    public ResponseEntity<String> getCategorySchema() {
+        String schema = schemaGeneratorUtil.generateSchema(CategoryDTO.class);
+        return ResponseEntity.ok(schema);
     }
 }

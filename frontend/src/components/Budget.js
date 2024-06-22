@@ -80,6 +80,7 @@ function Budget() {
             amount: '',
             currency: 'EUR',
             categoryId: '',
+            userId: 1
         };
     }
 
@@ -135,6 +136,7 @@ function Budget() {
             amount: budget.amount,
             currency: budget.currency,
             categoryId: budget.categoryId,
+            userId: 1,
             _links: budget._links,
         });
         setShowAddForm(true);

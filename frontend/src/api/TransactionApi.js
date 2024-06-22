@@ -1,8 +1,10 @@
 import {apiRequest} from "./ApiRequest";
 
-const apiUrl = '/api/transactions/';
+const apiUrl = '/api/transactions';
 
-export const fetchTransactions = async (page = 0, size = 20) => {
+export const fetchTransactions = async (page = 1, size = 20) => {
+    // API page numbers start from 0
+    page = page - 1;
     const response = await apiRequest({
         url: `${apiUrl}/?page=${page}&size=${size}`,
         method: 'GET'

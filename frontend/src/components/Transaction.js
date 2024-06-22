@@ -1,5 +1,6 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect, useContext, useCallback} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
+import {useNavigate, useLocation} from 'react-router-dom';
 import {ApiKeyContext} from '../ApiKeyProvider';
 import {
     fetchTransactions,
@@ -16,16 +17,27 @@ import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
 import {format} from 'date-fns';
 import {getHyperMediaLink} from "../api/HyperMedia";
+import Pager from '../components/Pager';
 
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
 
 function Transaction() {
     const {isAuthenticated} = useContext(ApiKeyContext);
+    const query = useQuery();
+    const page = parseInt(query.get('page')) || 1;
+    const navigate = useNavigate();
+
+    const fetchTransactionsForPage = useCallback(() => fetchTransactions(page), [page]);
     const {
         data: transactions,
         loading: transactionsLoading,
         error: transactionsError,
+        navs,
+        page: pageInfo,
         reload: loadTransactions
-    } = useFetchData(fetchTransactions, [isAuthenticated]);
+    } = useFetchData(fetchTransactionsForPage, [isAuthenticated, fetchTransactionsForPage]);
     const {
         data: categories,
         error: categoriesError,
@@ -66,7 +78,7 @@ function Transaction() {
             type: '',
             amount: '',
             title: '',
-            currency: 'BDT',
+            currency: 'EUR',
             description: '',
             tags: '',
             primaryCategoryId: ''
@@ -153,10 +165,13 @@ function Transaction() {
         }
     };
 
-
     const handleError = (message) => {
         setToastMessage(message);
         setShowToast(true);
+    };
+
+    const handlePageChange = (newPage) => {
+        navigate(`?page=${newPage}`);
     };
 
     return (
@@ -178,49 +193,56 @@ function Transaction() {
                     {transactionsLoading ? (
                         <Spinner animation="border"/>
                     ) : transactions.length > 0 ? (
-                        <Table striped bordered hover>
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Title</th>
-                                <th>Currency</th>
-                                <th>Description</th>
-                                <th>Tags</th>
-                                <th>Primary Category</th>
-                                <th style={{width: '120px'}}>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {transactions.map((transaction) => (
-                                <tr key={transaction.id}>
-                                    <td>{transaction.id}</td>
-                                    <td>{format(new Date(transaction.date), 'yyyy-MM-dd HH:mm')}</td>
-                                    <td>{transaction.type}</td>
-                                    <td>{transaction.amount}</td>
-                                    <td>{transaction.title}</td>
-                                    <td>{transaction.currency}</td>
-                                    <td>{transaction.description}</td>
-                                    <td>{transaction.tags}</td>
-                                    <td>{categoryMap[transaction.primaryCategoryId]}</td>
-                                    <td>
-                                        <ButtonGroup size="sm">
-                                            <Button variant="outline-primary"
-                                                    onClick={() => handleShowEditForm(transaction)}>
-                                                Edit
-                                            </Button>
-                                            <Button variant="outline-danger"
-                                                    onClick={() => confirmDeleteTransaction(transaction)}>
-                                                Delete
-                                            </Button>
-                                        </ButtonGroup>
-                                    </td>
+                        <>
+                            <Table striped bordered hover>
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Title</th>
+                                    <th>Currency</th>
+                                    <th>Description</th>
+                                    <th>Tags</th>
+                                    <th>Primary Category</th>
+                                    <th style={{width: '120px'}}>Actions</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </Table>
+                                </thead>
+                                <tbody>
+                                {transactions.map((transaction) => (
+                                    <tr key={transaction.id}>
+                                        <td>{transaction.id}</td>
+                                        <td>{format(new Date(transaction.date), 'yyyy-MM-dd HH:mm')}</td>
+                                        <td>{transaction.type}</td>
+                                        <td>{transaction.amount}</td>
+                                        <td>{transaction.title}</td>
+                                        <td>{transaction.currency}</td>
+                                        <td>{transaction.description}</td>
+                                        <td>{transaction.tags}</td>
+                                        <td>{categoryMap[transaction.primaryCategoryId]}</td>
+                                        <td>
+                                            <ButtonGroup size="sm">
+                                                <Button variant="outline-primary"
+                                                        onClick={() => handleShowEditForm(transaction)}>
+                                                    Edit
+                                                </Button>
+                                                <Button variant="outline-danger"
+                                                        onClick={() => confirmDeleteTransaction(transaction)}>
+                                                    Delete
+                                                </Button>
+                                            </ButtonGroup>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </Table>
+                            <Row>
+                                <div className="d-flex justify-content-center mt-3 mb-5">
+                                    <Pager navs={navs}/>
+                                </div>
+                            </Row>
+                        </>
                     ) : (
                         <Alert key='info' variant='info'>
                             No transactions available.

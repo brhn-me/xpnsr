@@ -1,5 +1,6 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect, useContext, useCallback} from 'react';
 import {Button, Container, Row, Col, Table, Spinner, ButtonGroup, Alert} from 'react-bootstrap';
+import {useNavigate, useLocation} from 'react-router-dom';
 import {ApiKeyContext} from '../ApiKeyProvider';
 import {fetchBudgets, deleteBudget, updateBudget, addBudget, deleteBudgetHM, updateBudgetHM} from '../api/BudgetApi';
 import {fetchCategories} from '../api/CategoryApi';
@@ -9,15 +10,27 @@ import ToastNotification from '../components/ToastNotification';
 import useFetchData from '../hooks/UseFetchData';
 import useCategoryMap from '../hooks/UseCategoryMap';
 import {getHyperMediaLink} from "../api/HyperMedia";
+import Pager from '../components/Pager';
+
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
 
 function Budget() {
     const {isAuthenticated} = useContext(ApiKeyContext);
+    const query = useQuery();
+    const page = parseInt(query.get('page')) || 1;
+    const navigate = useNavigate();
+
+    const fetchBudgetsForPage = useCallback(() => fetchBudgets(page), [page]);
     const {
         data: budgets,
         loading: budgetsLoading,
         error: budgetsError,
+        navs,
+        page: pageInfo,
         reload: loadBudgets
-    } = useFetchData(fetchBudgets, [isAuthenticated]);
+    } = useFetchData(fetchBudgetsForPage, [isAuthenticated, fetchBudgetsForPage]);
     const {
         data: categories,
         error: categoriesError,
@@ -95,7 +108,6 @@ function Budget() {
         }
     };
 
-
     const handleCloseForm = () => setShowAddForm(false);
     const handleShowAddForm = () => {
         setBudgetData(initialBudgetData());
@@ -110,6 +122,7 @@ function Budget() {
             amount: budget.amount,
             currency: budget.currency,
             categoryId: budget.categoryId,
+            _links: budget._links,
         });
         setShowAddForm(true);
     };
@@ -140,10 +153,13 @@ function Budget() {
         }
     };
 
-
     const handleError = (message) => {
         setToastMessage(message);
         setShowToast(true);
+    };
+
+    const handlePageChange = (newPage) => {
+        navigate(`?page=${newPage}`);
     };
 
     return (
@@ -165,41 +181,50 @@ function Budget() {
                     {budgetsLoading ? (
                         <Spinner animation="border"/>
                     ) : budgets.length > 0 ? (
-                        <Table striped bordered hover>
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>Description</th>
-                                <th>Amount</th>
-                                <th>Currency</th>
-                                <th>Category</th>
-                                <th style={{width: '120px'}}>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {budgets.map((budget) => (
-                                <tr key={budget.id}>
-                                    <td>{budget.id}</td>
-                                    <td>{budget.title}</td>
-                                    <td>{budget.description}</td>
-                                    <td>{budget.amount}</td>
-                                    <td>{budget.currency}</td>
-                                    <td>{categoryMap[budget.categoryId]}</td>
-                                    <td>
-                                        <ButtonGroup size="sm">
-                                            <Button variant="outline-primary" onClick={() => handleShowEditForm(budget)}>
-                                                Edit
-                                            </Button>
-                                            <Button variant="outline-danger" onClick={() => confirmDeleteBudget(budget)}>
-                                                Delete
-                                            </Button>
-                                        </ButtonGroup>
-                                    </td>
+                        <>
+                            <Table striped bordered hover>
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Currency</th>
+                                    <th>Category</th>
+                                    <th style={{width: '120px'}}>Actions</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </Table>
+                                </thead>
+                                <tbody>
+                                {budgets.map((budget) => (
+                                    <tr key={budget.id}>
+                                        <td>{budget.id}</td>
+                                        <td>{budget.title}</td>
+                                        <td>{budget.description}</td>
+                                        <td>{budget.amount}</td>
+                                        <td>{budget.currency}</td>
+                                        <td>{categoryMap[budget.categoryId]}</td>
+                                        <td>
+                                            <ButtonGroup size="sm">
+                                                <Button variant="outline-primary"
+                                                        onClick={() => handleShowEditForm(budget)}>
+                                                    Edit
+                                                </Button>
+                                                <Button variant="outline-danger"
+                                                        onClick={() => confirmDeleteBudget(budget)}>
+                                                    Delete
+                                                </Button>
+                                            </ButtonGroup>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </Table>
+                            <Row>
+                                <div className="d-flex justify-content-center mt-3 mb-5">
+                                    <Pager navs={navs}/>
+                                </div>
+                            </Row>
+                        </>
                     ) : (
                         <Alert key='info' variant='info'>
                             No budgets available.

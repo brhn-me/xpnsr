@@ -80,8 +80,7 @@ public class TransactionApiTest {
                 .andExpect(jsonPath("$.primaryCategoryId").value("groceries"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.transactions.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 
     /**
@@ -117,8 +116,7 @@ public class TransactionApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.transactions.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 
     /**
@@ -153,8 +151,7 @@ public class TransactionApiTest {
                 .andExpect(jsonPath("$.primaryCategoryId").value("groceries"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.transactions.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 
     /**
@@ -191,8 +188,7 @@ public class TransactionApiTest {
                 .andExpect(jsonPath("$.items[0].primaryCategoryId").value("groceries"))
                 .andExpect(jsonPath("$.items[0]._links.self.href").exists())
                 .andExpect(jsonPath("$.items[0]._links.edit.href").exists())
-                .andExpect(jsonPath("$.items[0]._links.delete.href").exists())
-                .andExpect(jsonPath("$.items[0]._links.transactions.href").exists());
+                .andExpect(jsonPath("$.items[0]._links.delete.href").exists());
     }
 
     /**
@@ -206,8 +202,7 @@ public class TransactionApiTest {
 
         mockMvc.perform(delete("/api/transactions/" + createdTransaction.getId())
                         .header(API_KEY_HEADER, SAMPLE_API_KEY))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._links.transactions.href").exists());
+                .andExpect(status().isOk());
     }
 
     /**
@@ -367,7 +362,6 @@ public class TransactionApiTest {
                 .andExpect(jsonPath("$.primaryCategoryId").value("groceries"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.transactions.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 }

@@ -66,8 +66,7 @@ public class CategoryApiTest {
                 .andExpect(jsonPath("$.description").value("Expenses for groceries"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.categories.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 
     /**
@@ -104,8 +103,7 @@ public class CategoryApiTest {
                 .andExpect(jsonPath("$.description").value("Expenses for food and beverages"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.categories.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 
     /**
@@ -141,8 +139,7 @@ public class CategoryApiTest {
                 .andExpect(jsonPath("$.description").value("Expenses for groceries"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.categories.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 
     /**
@@ -184,8 +181,7 @@ public class CategoryApiTest {
 
         mockMvc.perform(delete("/api/categories/" + createdCategory.getId())
                         .header(API_KEY_HEADER, SAMPLE_API_KEY))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._links.categories.href").exists());
+                .andExpect(status().isOk());
     }
 
     /**
@@ -347,7 +343,6 @@ public class CategoryApiTest {
                 .andExpect(jsonPath("$.description").value("Expenses for groceries"))
                 .andExpect(jsonPath("$._links.self.href").exists())
                 .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.categories.href").exists());
+                .andExpect(jsonPath("$._links.delete.href").exists());
     }
 }

@@ -175,9 +175,9 @@ In this meeting, we will provide updated XPNSR app backend api, hypermedia, fron
 | Complexity/Features | - More complexities are added<br>- Pagination<br>- Navigation |
 | Uses Schemas | N/A |
 | Uses Link Relations | - Client uses Hypermedia links from API to add, update, and delete entities |
-| Overview | Poor description for Aux Service |
-| API implementation | - Very simple API implementation<br>- Not error controlled |
-| Code Quality | Added missing code quality chekcing for auxilary service |
+| Overview | Improved the Descritpion of Aux Service |
+| API implementation | - N/A |
+| Code Quality | N/A |
 
 
 

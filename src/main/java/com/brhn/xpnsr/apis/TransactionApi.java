@@ -5,7 +5,6 @@ import com.brhn.xpnsr.services.TransactionService;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
 import com.brhn.xpnsr.services.dtos.TransactionDTO;
-import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -45,20 +44,17 @@ public class TransactionApi {
 
     private final TransactionService transactionService;
     private final PagedResourcesAssembler<TransactionDTO> pagedResourcesAssembler;
-    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructs a new TransactionApi instance with the specified TransactionService.
      *
      * @param transactionService      the service for handling transaction operations
      * @param pagedResourcesAssembler the assembler used for pagination of TransactionDTOs
-     * @param schemaGeneratorUtil     the utility for generating JSON schemas
      */
     @Autowired
-    public TransactionApi(TransactionService transactionService, PagedResourcesAssembler<TransactionDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
+    public TransactionApi(TransactionService transactionService, PagedResourcesAssembler<TransactionDTO> pagedResourcesAssembler) {
         this.transactionService = transactionService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -183,9 +179,6 @@ public class TransactionApi {
         Link addTransactionLink = linkTo(methodOn(TransactionApi.class).add(null)).withRel("add").withType("POST");
         customPagedModel.add(addTransactionLink);
 
-        Link schemaLink = linkTo(methodOn(TransactionApi.class).getTransactionSchema()).withRel("schema").withType("GET");
-        customPagedModel.add(schemaLink);
-
         return ResponseEntity.ok(customPagedModel);
     }
 
@@ -230,18 +223,5 @@ public class TransactionApi {
         // Control Links
         entityModel.add(linkTo(methodOn(TransactionApi.class).update(transactionId, transactionDTO)).withRel("edit").withType("PUT"));
         entityModel.add(linkTo(methodOn(TransactionApi.class).delete(transactionId)).withRel("delete").withType("DELETE"));
-        entityModel.add(linkTo(methodOn(TransactionApi.class).getTransactionSchema()).withRel("schema").withType("GET"));
-    }
-
-    /**
-     * Retrieves the JSON schema for TransactionDTO.
-     *
-     * @return ResponseEntity containing the JSON schema for TransactionDTO.
-     */
-    @GetMapping("/schema")
-    @Operation(summary = "Get schema for TransactionDTO", description = "Retrieves the JSON schema for TransactionDTO.")
-    public ResponseEntity<String> getTransactionSchema() {
-        String schema = schemaGeneratorUtil.generateSchema(TransactionDTO.class);
-        return ResponseEntity.ok(schema);
     }
 }

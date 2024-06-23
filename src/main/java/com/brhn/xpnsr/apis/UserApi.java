@@ -6,7 +6,6 @@ import com.brhn.xpnsr.services.UserService;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
 import com.brhn.xpnsr.services.dtos.UserDTO;
-import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,20 +45,17 @@ public class UserApi {
 
     private final UserService userService;
     private final PagedResourcesAssembler<UserDTO> pagedResourcesAssembler;
-    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructs a new UserApi instance with the specified UserService.
      *
      * @param userService             the service for handling user operations
      * @param pagedResourcesAssembler the assembler used for pagination of UserDTOs
-     * @param schemaGeneratorUtil     the utility for generating JSON schemas
      */
     @Autowired
-    public UserApi(UserService userService, PagedResourcesAssembler<UserDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
+    public UserApi(UserService userService, PagedResourcesAssembler<UserDTO> pagedResourcesAssembler) {
         this.userService = userService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -188,9 +184,6 @@ public class UserApi {
         Link addUserLink = linkTo(methodOn(UserApi.class).createUser(null)).withRel("add").withType("POST");
         customPagedModel.add(addUserLink);
 
-        Link schemaLink = linkTo(methodOn(UserApi.class).getUserSchema()).withRel("schema").withType("GET");
-        customPagedModel.add(schemaLink);
-
         return ResponseEntity.ok(customPagedModel);
     }
 
@@ -234,18 +227,5 @@ public class UserApi {
         // Control Links
         entityModel.add(linkTo(methodOn(UserApi.class).updateUser(userId, userDTO)).withRel("edit").withType("PUT"));
         entityModel.add(linkTo(methodOn(UserApi.class).deleteUser(userId)).withRel("delete").withType("DELETE"));
-        entityModel.add(linkTo(methodOn(UserApi.class).getUserSchema()).withRel("schema").withType("GET"));
-    }
-
-    /**
-     * Retrieves the JSON schema for UserDTO.
-     *
-     * @return ResponseEntity containing the JSON schema for UserDTO.
-     */
-    @GetMapping("/schema")
-    @Operation(summary = "Get schema for UserDTO", description = "Retrieves the JSON schema for UserDTO.")
-    public ResponseEntity<String> getUserSchema() {
-        String schema = schemaGeneratorUtil.generateSchema(UserDTO.class);
-        return ResponseEntity.ok(schema);
     }
 }

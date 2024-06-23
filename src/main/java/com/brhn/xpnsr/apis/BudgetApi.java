@@ -1,12 +1,10 @@
 package com.brhn.xpnsr.apis;
 
 import com.brhn.xpnsr.exceptions.NotFoundError;
-import com.brhn.xpnsr.models.Budget;
 import com.brhn.xpnsr.services.BudgetService;
 import com.brhn.xpnsr.services.dtos.BudgetDTO;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
-import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,20 +44,17 @@ public class BudgetApi {
 
     private final BudgetService budgetService;
     private final PagedResourcesAssembler<BudgetDTO> pagedResourcesAssembler;
-    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructor for BudgetApi.
      *
      * @param budgetService           The service used to manage budgets.
      * @param pagedResourcesAssembler The assembler used for pagination of BudgetDTOs.
-     * @param schemaGeneratorUtil     The utility for generating JSON schemas.
      */
     @Autowired
-    public BudgetApi(BudgetService budgetService, PagedResourcesAssembler<BudgetDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
+    public BudgetApi(BudgetService budgetService, PagedResourcesAssembler<BudgetDTO> pagedResourcesAssembler) {
         this.budgetService = budgetService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -183,9 +178,6 @@ public class BudgetApi {
         Link addBudgetLink = linkTo(methodOn(BudgetApi.class).createBudget(null)).withRel("add").withType("POST");
         customPagedModel.add(addBudgetLink);
 
-        Link schemaLink = linkTo(methodOn(BudgetApi.class).getBudgetSchema()).withRel("schema").withType("GET");
-        customPagedModel.add(schemaLink);
-
         return ResponseEntity.ok(customPagedModel);
     }
 
@@ -230,18 +222,5 @@ public class BudgetApi {
         // Control Links
         entityModel.add(linkTo(methodOn(BudgetApi.class).updateBudget(budgetId, budgetDTO)).withRel("edit").withType("PUT"));
         entityModel.add(linkTo(methodOn(BudgetApi.class).deleteBudget(budgetId)).withRel("delete").withType("DELETE"));
-        entityModel.add(linkTo(methodOn(BudgetApi.class).getBudgetSchema()).withRel("schema").withType("GET"));
-    }
-
-    /**
-     * Retrieves the JSON schema for BudgetDTO.
-     *
-     * @return ResponseEntity containing the JSON schema for BudgetDTO.
-     */
-    @GetMapping("/schema")
-    @Operation(summary = "Get schema for BudgetDTO", description = "Retrieves the JSON schema for BudgetDTO.")
-    public ResponseEntity<String> getBudgetSchema() {
-        String schema = schemaGeneratorUtil.generateSchema(BudgetDTO.class);
-        return ResponseEntity.ok(schema);
     }
 }

@@ -4,7 +4,6 @@ import com.brhn.xpnsr.services.BillService;
 import com.brhn.xpnsr.services.dtos.BillDTO;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
-import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,8 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -44,20 +43,18 @@ public class BillApi {
 
     private final BillService billService;
     private final PagedResourcesAssembler<BillDTO> pagedResourcesAssembler;
-    private final SchemaGeneratorUtil schemaGeneratorUtil;
+
 
     /**
      * Constructor for BillApi.
      *
      * @param billService             The service used to manage bills.
      * @param pagedResourcesAssembler The assembler used for pagination of BillDTOs.
-     * @param schemaGeneratorUtil     The utility for generating JSON schemas.
      */
     @Autowired
-    public BillApi(BillService billService, PagedResourcesAssembler<BillDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
+    public BillApi(BillService billService, PagedResourcesAssembler<BillDTO> pagedResourcesAssembler) {
         this.billService = billService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -133,9 +130,6 @@ public class BillApi {
         Link addBillLink = linkTo(methodOn(BillApi.class).createBill(null)).withRel("add").withType("POST");
         customPagedModel.add(addBillLink);
 
-        Link schemaLink = linkTo(methodOn(BillApi.class).getBillSchema()).withRel("schema").withType("GET");
-        customPagedModel.add(schemaLink);
-
         return ResponseEntity.ok(customPagedModel);
     }
 
@@ -173,18 +167,7 @@ public class BillApi {
         // Control Links
         entityModel.add(linkTo(methodOn(BillApi.class).updateBill(billId, billDTO)).withRel("edit").withType("PUT"));
         entityModel.add(linkTo(methodOn(BillApi.class).deleteBill(billId)).withRel("delete").withType("DELETE"));
-        entityModel.add(linkTo(methodOn(BillApi.class).getBillSchema()).withRel("schema").withType("GET"));
     }
 
-    /**
-     * Retrieves the JSON schema for BillDTO.
-     *
-     * @return ResponseEntity containing the JSON schema for BillDTO.
-     */
-    @GetMapping("/schema")
-    @Operation(summary = "Get schema for BillDTO", description = "Retrieves the JSON schema for BillDTO.")
-    public ResponseEntity<String> getBillSchema() {
-        String schema = schemaGeneratorUtil.generateSchema(BillDTO.class);
-        return ResponseEntity.ok(schema);
-    }
+
 }

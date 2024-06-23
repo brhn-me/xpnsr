@@ -6,7 +6,6 @@ import com.brhn.xpnsr.services.CategoryService;
 import com.brhn.xpnsr.services.dtos.CategoryDTO;
 import com.brhn.xpnsr.services.dtos.CustomPagedModel;
 import com.brhn.xpnsr.services.dtos.LinksDTO;
-import com.brhn.xpnsr.utils.SchemaGeneratorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,20 +45,17 @@ public class CategoryApi {
 
     private final CategoryService categoryService;
     private final PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler;
-    private final SchemaGeneratorUtil schemaGeneratorUtil;
 
     /**
      * Constructs a new CategoryApi instance with the specified CategoryService.
      *
      * @param categoryService         the service for handling category operations
      * @param pagedResourcesAssembler the assembler used for pagination of CategoryDTOs
-     * @param schemaGeneratorUtil     the utility for generating JSON schemas
      */
     @Autowired
-    public CategoryApi(CategoryService categoryService, PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler, SchemaGeneratorUtil schemaGeneratorUtil) {
+    public CategoryApi(CategoryService categoryService, PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler) {
         this.categoryService = categoryService;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.schemaGeneratorUtil = schemaGeneratorUtil;
     }
 
     /**
@@ -186,9 +182,6 @@ public class CategoryApi {
         Link addCategoryLink = linkTo(methodOn(CategoryApi.class).add(null)).withRel("add").withType("POST");
         customPagedModel.add(addCategoryLink);
 
-        Link schemaLink = linkTo(methodOn(CategoryApi.class).getCategorySchema()).withRel("schema").withType("GET");
-        customPagedModel.add(schemaLink);
-
         return ResponseEntity.ok(customPagedModel);
     }
 
@@ -233,18 +226,7 @@ public class CategoryApi {
         // Control Links
         entityModel.add(linkTo(methodOn(CategoryApi.class).update(categoryId, categoryDTO)).withRel("edit").withType("PUT"));
         entityModel.add(linkTo(methodOn(CategoryApi.class).delete(categoryId)).withRel("delete").withType("DELETE"));
-        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategorySchema()).withRel("schema").withType("GET"));
     }
 
-    /**
-     * Retrieves the JSON schema for CategoryDTO.
-     *
-     * @return ResponseEntity containing the JSON schema for CategoryDTO.
-     */
-    @GetMapping("/schema")
-    @Operation(summary = "Get schema for CategoryDTO", description = "Retrieves the JSON schema for CategoryDTO.")
-    public ResponseEntity<String> getCategorySchema() {
-        String schema = schemaGeneratorUtil.generateSchema(CategoryDTO.class);
-        return ResponseEntity.ok(schema);
-    }
+
 }

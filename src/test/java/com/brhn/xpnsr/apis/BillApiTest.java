@@ -56,18 +56,7 @@ public class BillApiTest {
      */
     @Test
     public void testCreateBill() throws Exception {
-        mockMvc.perform(post("/api/bills/")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": 12, \"amount\": 1000.00, \"categoryId\": \"groceries\"}"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.tenure").value(12))
-                .andExpect(jsonPath("$.amount").value(1000.00))
-                .andExpect(jsonPath("$.categoryId").value("groceries"))
-                .andExpect(jsonPath("$._links.self.href").exists())
-                .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.category.href").exists());
+        mockMvc.perform(post("/api/bills/").header(API_KEY_HEADER, SAMPLE_API_KEY).contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": 12, \"amount\": 1000.00, \"categoryId\": \"groceries\"}")).andExpect(status().isCreated()).andExpect(jsonPath("$.tenure").value(12)).andExpect(jsonPath("$.amount").value(1000.00)).andExpect(jsonPath("$.categoryId").value("groceries")).andExpect(jsonPath("$._links.self.href").exists()).andExpect(jsonPath("$._links.edit.href").exists()).andExpect(jsonPath("$._links.delete.href").exists()).andExpect(jsonPath("$._links.category.href").exists());
     }
 
     /**
@@ -77,11 +66,7 @@ public class BillApiTest {
      */
     @Test
     public void testCreateBillInvalidInput() throws Exception {
-        mockMvc.perform(post("/api/bills/")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": -1, \"amount\": -1000.00, \"categoryId\": \"\"}"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/bills/").header(API_KEY_HEADER, SAMPLE_API_KEY).contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": -1, \"amount\": -1000.00, \"categoryId\": \"\"}")).andExpect(status().isBadRequest());
     }
 
     /**
@@ -93,18 +78,7 @@ public class BillApiTest {
     public void testUpdateBill() throws Exception {
         BillDTO createdBill = billService.createBill(billDTO);
 
-        mockMvc.perform(put("/api/bills/" + createdBill.getId())
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": 12, \"amount\": 1500.00, \"categoryId\": \"groceries\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tenure").value(12))
-                .andExpect(jsonPath("$.amount").value(1500.00))
-                .andExpect(jsonPath("$.categoryId").value("groceries"))
-                .andExpect(jsonPath("$._links.self.href").exists())
-                .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.category.href").exists());
+        mockMvc.perform(put("/api/bills/" + createdBill.getId()).header(API_KEY_HEADER, SAMPLE_API_KEY).contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": 12, \"amount\": 1500.00, \"categoryId\": \"groceries\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.tenure").value(12)).andExpect(jsonPath("$.amount").value(1500.00)).andExpect(jsonPath("$.categoryId").value("groceries")).andExpect(jsonPath("$._links.self.href").exists()).andExpect(jsonPath("$._links.edit.href").exists()).andExpect(jsonPath("$._links.delete.href").exists()).andExpect(jsonPath("$._links.category.href").exists());
     }
 
     /**
@@ -114,11 +88,7 @@ public class BillApiTest {
      */
     @Test
     public void testUpdateBillNotFound() throws Exception {
-        mockMvc.perform(put("/api/bills/999")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": 12, \"amount\": 1500.00, \"categoryId\": \"groceries\"}"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(put("/api/bills/999").header(API_KEY_HEADER, SAMPLE_API_KEY).contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": 12, \"amount\": 1500.00, \"categoryId\": \"groceries\"}")).andExpect(status().isNotFound());
     }
 
     /**
@@ -130,17 +100,7 @@ public class BillApiTest {
     public void testGetBillById() throws Exception {
         BillDTO createdBill = billService.createBill(billDTO);
 
-        mockMvc.perform(get("/api/bills/" + createdBill.getId())
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tenure").value(12))
-                .andExpect(jsonPath("$.amount").value(1000.00))
-                .andExpect(jsonPath("$.categoryId").value("groceries"))
-                .andExpect(jsonPath("$._links.self.href").exists())
-                .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.category.href").exists());
+        mockMvc.perform(get("/api/bills/" + createdBill.getId()).header(API_KEY_HEADER, SAMPLE_API_KEY).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.tenure").value(12)).andExpect(jsonPath("$.amount").value(1000.00)).andExpect(jsonPath("$.categoryId").value("groceries")).andExpect(jsonPath("$._links.self.href").exists()).andExpect(jsonPath("$._links.edit.href").exists()).andExpect(jsonPath("$._links.delete.href").exists()).andExpect(jsonPath("$._links.category.href").exists());
     }
 
     /**
@@ -150,10 +110,7 @@ public class BillApiTest {
      */
     @Test
     public void testGetBillByIdNotFound() throws Exception {
-        mockMvc.perform(get("/api/bills/999")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/bills/999").header(API_KEY_HEADER, SAMPLE_API_KEY).accept(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
     }
 
     /**
@@ -165,17 +122,7 @@ public class BillApiTest {
     public void testGetAllBills() throws Exception {
         billService.createBill(billDTO);
 
-        mockMvc.perform(get("/api/bills/")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].tenure").value(12))
-                .andExpect(jsonPath("$.items[0].amount").value(1000.00))
-                .andExpect(jsonPath("$.items[0].categoryId").value("groceries"))
-                .andExpect(jsonPath("$.items[0]._links.self.href").exists())
-                .andExpect(jsonPath("$.items[0]._links.edit.href").exists())
-                .andExpect(jsonPath("$.items[0]._links.delete.href").exists())
-                .andExpect(jsonPath("$.items[0]._links.category.href").exists());
+        mockMvc.perform(get("/api/bills/").header(API_KEY_HEADER, SAMPLE_API_KEY).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.items[0].tenure").value(12)).andExpect(jsonPath("$.items[0].amount").value(1000.00)).andExpect(jsonPath("$.items[0].categoryId").value("groceries")).andExpect(jsonPath("$.items[0]._links.self.href").exists()).andExpect(jsonPath("$.items[0]._links.edit.href").exists()).andExpect(jsonPath("$.items[0]._links.delete.href").exists()).andExpect(jsonPath("$.items[0]._links.category.href").exists());
     }
 
     /**
@@ -187,10 +134,7 @@ public class BillApiTest {
     public void testDeleteBill() throws Exception {
         BillDTO createdBill = billService.createBill(billDTO);
 
-        mockMvc.perform(delete("/api/bills/" + createdBill.getId())
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._links.bills.href").exists());
+        mockMvc.perform(delete("/api/bills/" + createdBill.getId()).header(API_KEY_HEADER, SAMPLE_API_KEY)).andExpect(status().isOk()).andExpect(jsonPath("$._links.bills.href").exists());
     }
 
     /**
@@ -200,9 +144,7 @@ public class BillApiTest {
      */
     @Test
     public void testDeleteBillNotFound() throws Exception {
-        mockMvc.perform(delete("/api/bills/999")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(delete("/api/bills/999").header(API_KEY_HEADER, SAMPLE_API_KEY)).andExpect(status().isNotFound());
     }
 
     /**
@@ -212,11 +154,7 @@ public class BillApiTest {
      */
     @Test
     public void testCreateBillInvalidApiKey() throws Exception {
-        mockMvc.perform(post("/api/bills/")
-                        .header(API_KEY_HEADER, "invalid_api_key")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": 12, \"amount\": 1000.00, \"categoryId\": \"groceries\"}"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/bills/").header(API_KEY_HEADER, "invalid_api_key").contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": 12, \"amount\": 1000.00, \"categoryId\": \"groceries\"}")).andExpect(status().isUnauthorized());
     }
 
     /**
@@ -228,11 +166,7 @@ public class BillApiTest {
     public void testUpdateBillInvalidApiKey() throws Exception {
         BillDTO createdBill = billService.createBill(billDTO);
 
-        mockMvc.perform(put("/api/bills/" + createdBill.getId())
-                        .header(API_KEY_HEADER, "invalid_api_key")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": 12, \"amount\": 1500.00, \"categoryId\": \"groceries\"}"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(put("/api/bills/" + createdBill.getId()).header(API_KEY_HEADER, "invalid_api_key").contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": 12, \"amount\": 1500.00, \"categoryId\": \"groceries\"}")).andExpect(status().isUnauthorized());
     }
 
     /**
@@ -244,9 +178,7 @@ public class BillApiTest {
     public void testDeleteBillInvalidApiKey() throws Exception {
         BillDTO createdBill = billService.createBill(billDTO);
 
-        mockMvc.perform(delete("/api/bills/" + createdBill.getId())
-                        .header(API_KEY_HEADER, "invalid_api_key"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(delete("/api/bills/" + createdBill.getId()).header(API_KEY_HEADER, "invalid_api_key")).andExpect(status().isUnauthorized());
     }
 
     /**
@@ -258,10 +190,7 @@ public class BillApiTest {
     public void testGetBillByIdInvalidApiKey() throws Exception {
         BillDTO createdBill = billService.createBill(billDTO);
 
-        mockMvc.perform(get("/api/bills/" + createdBill.getId())
-                        .header(API_KEY_HEADER, "invalid_api_key")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/bills/" + createdBill.getId()).header(API_KEY_HEADER, "invalid_api_key").accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
     }
 
     /**
@@ -273,10 +202,7 @@ public class BillApiTest {
     public void testGetAllBillsInvalidApiKey() throws Exception {
         billService.createBill(billDTO);
 
-        mockMvc.perform(get("/api/bills/")
-                        .header(API_KEY_HEADER, "invalid_api_key")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/bills/").header(API_KEY_HEADER, "invalid_api_key").accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
     }
 
     /**
@@ -295,13 +221,7 @@ public class BillApiTest {
             billService.createBill(bill);
         }
 
-        mockMvc.perform(get("/api/bills/?page=0&size=5&sort=amount,desc")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(5))
-                .andExpect(jsonPath("$.items[0].amount").value(109.00))
-                .andExpect(jsonPath("$.items[4].amount").value(105.00));
+        mockMvc.perform(get("/api/bills/?page=0&size=5&sort=amount,desc").header(API_KEY_HEADER, SAMPLE_API_KEY).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.items.length()").value(5)).andExpect(jsonPath("$.items[0].amount").value(109.00)).andExpect(jsonPath("$.items[4].amount").value(105.00));
     }
 
     /**
@@ -312,25 +232,13 @@ public class BillApiTest {
     @Test
     public void testCreateBillValidationErrors() throws Exception {
         // Invalid tenure
-        mockMvc.perform(post("/api/bills/")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": -1, \"amount\": 100.00, \"categoryId\": \"groceries\"}"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/bills/").header(API_KEY_HEADER, SAMPLE_API_KEY).contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": -1, \"amount\": 100.00, \"categoryId\": \"groceries\"}")).andExpect(status().isBadRequest());
 
         // Invalid amount
-        mockMvc.perform(post("/api/bills/")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": 12, \"amount\": -100.00, \"categoryId\": \"groceries\"}"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/bills/").header(API_KEY_HEADER, SAMPLE_API_KEY).contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": 12, \"amount\": -100.00, \"categoryId\": \"groceries\"}")).andExpect(status().isBadRequest());
 
         // Missing categoryId
-        mockMvc.perform(post("/api/bills/")
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tenure\": 12, \"amount\": 100.00}"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/bills/").header(API_KEY_HEADER, SAMPLE_API_KEY).contentType(MediaType.APPLICATION_JSON).content("{\"tenure\": 12, \"amount\": 100.00}")).andExpect(status().isBadRequest());
     }
 
     /**
@@ -342,16 +250,6 @@ public class BillApiTest {
     public void testGetBillByIdHypermediaLinks() throws Exception {
         BillDTO createdBill = billService.createBill(billDTO);
 
-        mockMvc.perform(get("/api/bills/" + createdBill.getId())
-                        .header(API_KEY_HEADER, SAMPLE_API_KEY)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tenure").value(12))
-                .andExpect(jsonPath("$.amount").value(1000.00))
-                .andExpect(jsonPath("$.categoryId").value("groceries"))
-                .andExpect(jsonPath("$._links.self.href").exists())
-                .andExpect(jsonPath("$._links.edit.href").exists())
-                .andExpect(jsonPath("$._links.delete.href").exists())
-                .andExpect(jsonPath("$._links.category.href").exists());
+        mockMvc.perform(get("/api/bills/" + createdBill.getId()).header(API_KEY_HEADER, SAMPLE_API_KEY).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.tenure").value(12)).andExpect(jsonPath("$.amount").value(1000.00)).andExpect(jsonPath("$.categoryId").value("groceries")).andExpect(jsonPath("$._links.self.href").exists()).andExpect(jsonPath("$._links.edit.href").exists()).andExpect(jsonPath("$._links.delete.href").exists()).andExpect(jsonPath("$._links.category.href").exists());
     }
 }

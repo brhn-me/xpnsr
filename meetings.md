@@ -145,10 +145,10 @@ Changes:
 ### Deliverable 3.0
 | Task | Update |
 | --- | --- |
-| Resource Table | Updated |
-| Addressability | Updated |
-| Uniform Interface | Updated |
-| Statelesness | Updated |
+| Resource Table | Updated in the documentation |
+| Addressability | Updated in the documentation |
+| Uniform Interface | Updated in the documentation |
+| Statelesness | Updated in the documentation |
 | Code Quality | Two new tools PMD and CheckStyle have been introduced |
 | Documentation | Added proper JSDoc documentation to all files |
 | Test Coverage | Added unit tests for all API endpoints |

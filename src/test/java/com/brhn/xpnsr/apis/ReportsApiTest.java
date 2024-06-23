@@ -41,7 +41,7 @@ public class ReportsApiTest {
 
     @Test
     public void testGetMonthlyExpenseReport() throws Exception {
-        mockMvc.perform(get("/api/reports/monthly-groceries")
+        mockMvc.perform(get("/api/reports/monthly-expense")
                         .header(API_KEY_HEADER, SAMPLE_API_KEY)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -49,7 +49,7 @@ public class ReportsApiTest {
 
     @Test
     public void testGetMonthlyEarningReport() throws Exception {
-        mockMvc.perform(get("/api/reports/monthly-salary")
+        mockMvc.perform(get("/api/reports/monthly-earning")
                         .header(API_KEY_HEADER, SAMPLE_API_KEY)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -57,7 +57,7 @@ public class ReportsApiTest {
 
     @Test
     public void testGetYearlyTravelReport() throws Exception {
-        mockMvc.perform(get("/api/reports/yearly-travel")
+        mockMvc.perform(get("/api/reports/yearly-expense")
                         .header(API_KEY_HEADER, SAMPLE_API_KEY)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

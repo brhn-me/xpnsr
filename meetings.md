@@ -140,9 +140,9 @@ We did not implemented the **use of hypermedia**  We need to use link relation n
 In this meeting, we will provide updated XPNSR app backend api, hypermedia, frontend client, documentation and auxilary service.
 
 
-Changes:
+### Changes:
 
-### Deliverable 3.0
+#### Deliverable 3.0
 | Task | Update |
 | --- | --- |
 | Resource Table | Updated in the documentation |
@@ -154,7 +154,7 @@ Changes:
 | Test Coverage | Added unit tests for all API endpoints |
 | URL Converters | Added URL converter in report API |
 
-# Deliverable 4.0
+#### Deliverable 4.0
 | Task | Update |
 | --- | --- |
 | State diagram | Updated the diagram |
@@ -166,7 +166,7 @@ Changes:
 | Custom link relations | - Custom link relations, IANA is described in the documentation<br>- Missing relations are added |
 | Implementation works | PUT transactions returning 500s are fixed |
 
-# Deliverable 5.0
+#### Deliverable 5.0
 | Task | Update |
 | --- | --- |
 | Overview | Improved |

@@ -177,7 +177,7 @@ In this meeting, we will provide updated XPNSR app backend api, hypermedia, fron
 | Uses Link Relations | - Client uses Hypermedia links from API to add, update, and delete entities |
 | Overview | Poor description for Aux Service |
 | API implementation | - Very simple API implementation<br>- Not error controlled |
-| Code Quality | N/A |
+| Code Quality | Added missing code quality chekcing for auxilary service |
 
 
 

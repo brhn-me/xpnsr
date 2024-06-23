@@ -114,7 +114,7 @@ When we looked at how we’ve built the system so far, there are some places whe
 
 ## Final meeting
 * **DATE:** 2024-05-27 
-* **ASSISTANTS:** Prof. Iván
+* **ASSISTANTS:** Iván
 
 ### Minutes
 During our final meeting, we presented the client description, implementation, hypermedia use, and the auxiliary service. For the **client description**, our overview was too vague. We need to give more details about what the client does and which API methods it uses. The use case diagram, GUI layout, and screen workflow were good and clear.
@@ -130,6 +130,55 @@ We did not implemented the **use of hypermedia**  We need to use link relation n
 - Add more features and complexity to the client.
 - Implementing Hypermedia
 - Clearly justify the chosen architecture in the documentation of Auxiliary Service.
+
+
+## Extended Final meeting
+* **DATE:** 2024-06-25 
+* **ASSISTANTS:** Iván
+
+### Minutes
+In this meeting, we will provide updated XPNSR app backend api, hypermedia, frontend client, documentation and auxilary service.
+
+
+Changes:
+
+### Deliverable 3.0
+| Task | Update |
+| --- | --- |
+| Resource Table | Updated |
+| Addressability | Updated |
+| Uniform Interface | Updated |
+| Statelesness | Updated |
+| Code Quality | Two new tools PMD and CheckStyle have been introduced |
+| Documentation | Added proper JSDoc documentation to all files |
+| Test Coverage | Added unit tests for all API endpoints |
+| URL Converters | Added URL converter in report API |
+
+# Deliverable 4.0
+| Task | Update |
+| --- | --- |
+| State diagram | Updated the diagram |
+| Connectedness | Improved connectedness |
+| Response examples | - Missing links fixed, 4xx issues fixed<br>- Documentation updated and made consistent |
+| Documentation structure | No components or parts of code that are reused |
+| Control implementation | Control is implemented in all API endpoints |
+| Testing coverage | Hypermedia links tests are covered in unit tests |
+| Custom link relations | - Custom link relations, IANA is described in the documentation<br>- Missing relations are added |
+| Implementation works | PUT transactions returning 500s are fixed |
+
+# Deliverable 5.0
+| Task | Update |
+| --- | --- |
+| Overview | Improved |
+| Error Handling | Detailed error handling is added in API and client-side |
+| Visuals | Visuals are improved |
+| Complexity/Features | - More complexities are added<br>- Pagination<br>- Navigation |
+| Uses Schemas | N/A |
+| Uses Link Relations | - Client uses Hypermedia links from API to add, update, and delete entities |
+| Overview | Poor description for Aux Service |
+| API implementation | - Very simple API implementation<br>- Not error controlled |
+| Code Quality | N/A |
+
 
 
 

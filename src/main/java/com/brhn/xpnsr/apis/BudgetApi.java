@@ -3,114 +3,224 @@ package com.brhn.xpnsr.apis;
 import com.brhn.xpnsr.exceptions.NotFoundError;
 import com.brhn.xpnsr.services.BudgetService;
 import com.brhn.xpnsr.services.dtos.BudgetDTO;
+import com.brhn.xpnsr.services.dtos.CustomPagedModel;
+import com.brhn.xpnsr.services.dtos.LinksDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.context.annotation.Bean;
+
+/**
+ * REST controller for managing budgets in the XPNSR application.
+ * Provides endpoints for creating, updating, retrieving, and deleting budgets.
+ */
 @CrossOrigin(origins = "*")
 @RestController
-@Tag(name = "Budget API", description = "The api for managing all budgets of XPNSR")
+@Tag(name = "Budget API", description = "The API for managing all budgets of XPNSR")
 @RequestMapping("/api/budgets")
-
+@Validated
 public class BudgetApi {
 
     private final BudgetService budgetService;
+    private final PagedResourcesAssembler<BudgetDTO> pagedResourcesAssembler;
 
+    /**
+     * Constructor for BudgetApi.
+     *
+     * @param budgetService           The service used to manage budgets.
+     * @param pagedResourcesAssembler The assembler used for pagination of BudgetDTOs.
+     */
     @Autowired
-    public BudgetApi(BudgetService budgetService) {
+    public BudgetApi(BudgetService budgetService, PagedResourcesAssembler<BudgetDTO> pagedResourcesAssembler) {
         this.budgetService = budgetService;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
     }
 
+    /**
+     * Creates a new budget.
+     *
+     * @param budgetDTO The BudgetDTO containing the details of the new budget.
+     * @return ResponseEntity containing the created BudgetDTO.
+     */
     @PostMapping("/")
-    @Operation(summary = "Add a new budget", description = "Creates a new budget and returns the created budget details",
+    @Operation(summary = "Create a new budget", description = "Adds a new budget to the system.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Details of the new budget",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = BudgetDTO.class),
+                            examples = @ExampleObject(value = "{\"title\": \"Monthly Groceries\", \"amount\": 500.00, \"currency\": \"USD\", \"categoryId\": \"groceries\", \"userId\": 1}")
+                    )
+            ),
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Budget created successfully",
-                            content = @Content(schema = @Schema(implementation = BudgetDTO.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid input")
+                    @ApiResponse(responseCode = "201", description = "Budget created successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = BudgetDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+                    @ApiResponse(responseCode = "404", description = "Category or user not found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    public ResponseEntity<EntityModel<BudgetDTO>> createBudget(@RequestBody BudgetDTO budgetDTO) {
+    public ResponseEntity<EntityModel<BudgetDTO>> createBudget(@Valid @RequestBody BudgetDTO budgetDTO) {
         BudgetDTO createdBudget = budgetService.add(budgetDTO);
-        EntityModel<BudgetDTO> entityModel = EntityModel.of(createdBudget,
-                linkTo(methodOn(BudgetApi.class).getBudgetById(createdBudget.getId())).withSelfRel());
+        EntityModel<BudgetDTO> entityModel = EntityModel.of(createdBudget);
+        addDetailLinks(entityModel);
 
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
 
+    /**
+     * Updates an existing budget by ID.
+     *
+     * @param id        The ID of the budget to be updated.
+     * @param budgetDTO The BudgetDTO containing the updated details of the budget.
+     * @return ResponseEntity containing the updated BudgetDTO.
+     */
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing budget", description = "Updates the budget details for the given ID and returns the updated budget details",
+    @Operation(summary = "Update an existing budget", description = "Updates details of an existing budget by ID.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Updated details of the budget",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = BudgetDTO.class),
+                            examples = @ExampleObject(value = "{\"title\": \"Monthly Groceries\", \"amount\": 600.00, \"currency\": \"USD\", \"categoryId\": \"groceries\", \"userId\": 1}")
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Budget updated successfully",
-                            content = @Content(schema = @Schema(implementation = BudgetDTO.class))),
-                    @ApiResponse(responseCode = "404", description = "Budget not found"),
-                    @ApiResponse(responseCode = "400", description = "Invalid input")
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = BudgetDTO.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+                    @ApiResponse(responseCode = "404", description = "Budget or category or user not found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    public ResponseEntity<EntityModel<BudgetDTO>> updateBudget(@PathVariable Long id, @RequestBody BudgetDTO budgetDTO) {
+    public ResponseEntity<EntityModel<BudgetDTO>> updateBudget(@PathVariable @Parameter(description = "ID of the budget to be updated") Long id,
+                                                               @Valid @RequestBody BudgetDTO budgetDTO) {
         BudgetDTO updatedBudget = budgetService.update(id, budgetDTO);
-        EntityModel<BudgetDTO> entityModel = EntityModel.of(updatedBudget,
-                linkTo(methodOn(BudgetApi.class).getBudgetById(updatedBudget.getId())).withSelfRel(),
-                linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel("all-budgets"));
+        EntityModel<BudgetDTO> entityModel = EntityModel.of(updatedBudget);
+        addDetailLinks(entityModel);
 
         return ResponseEntity.ok(entityModel);
     }
 
+    /**
+     * Retrieves a budget by ID.
+     *
+     * @param id The ID of the budget to retrieve.
+     * @return ResponseEntity containing the retrieved BudgetDTO.
+     */
     @GetMapping("/{id}")
-    @Operation(summary = "Get a budget by ID", description = "Returns a single budget details for the given ID",
+    @Operation(summary = "Get a budget by ID", description = "Retrieves a budget's details by its ID.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Budget found",
-                            content = @Content(schema = @Schema(implementation = BudgetDTO.class))),
-                    @ApiResponse(responseCode = "404", description = "Budget not found")
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = BudgetDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+                    @ApiResponse(responseCode = "404", description = "Budget not found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             })
     public ResponseEntity<EntityModel<BudgetDTO>> getBudgetById(@PathVariable Long id) {
         BudgetDTO budgetDTO = budgetService.getBudgetById(id);
-        EntityModel<BudgetDTO> entityModel = EntityModel.of(budgetDTO,
-                linkTo(methodOn(BudgetApi.class).getBudgetById(id)).withSelfRel(),
-                linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel("all-budgets"));
+        EntityModel<BudgetDTO> entityModel = EntityModel.of(budgetDTO);
+        addDetailLinks(entityModel);
 
         return ResponseEntity.ok(entityModel);
     }
 
+    /**
+     * Retrieves a paginated list of all budgets.
+     *
+     * @param pageable The pagination information.
+     * @return ResponseEntity containing a paginated list of BudgetDTOs.
+     */
     @GetMapping("/")
-    @Operation(summary = "List all budgets", description = "Returns a list of all budgets, with pagination support",
+    @Operation(summary = "List all budgets", description = "Retrieves a paginated list of all budgets.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Success",
-                            content = @Content(schema = @Schema(implementation = Page.class)))
+                    @ApiResponse(responseCode = "200", description = "Budgets retrieved",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = CustomPagedModel.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    public ResponseEntity<Page<EntityModel<BudgetDTO>>> getAllBudgets(Pageable pageable) {
+    public ResponseEntity<CustomPagedModel<BudgetDTO>> getAllBudgets(@ParameterObject Pageable pageable) {
         Page<BudgetDTO> budgetsPage = budgetService.getAllBudgets(pageable);
-        Page<EntityModel<BudgetDTO>> entityModelsPage = budgetsPage.map(budgetDTO ->
-                EntityModel.of(budgetDTO,
-                        linkTo(methodOn(BudgetApi.class).getBudgetById(budgetDTO.getId())).withRel("budget"),
-                        linkTo(methodOn(BudgetApi.class).getAllBudgets(pageable)).withSelfRel()
-                )
-        );
+        PagedModel<EntityModel<BudgetDTO>> pagedModel = pagedResourcesAssembler.toModel(budgetsPage, budgetDTO -> {
+            EntityModel<BudgetDTO> entityModel = EntityModel.of(budgetDTO);
+            addDetailLinks(entityModel);
+            return entityModel;
+        });
 
-        return ResponseEntity.ok(entityModelsPage);
+        CustomPagedModel<BudgetDTO> customPagedModel = new CustomPagedModel<>(pagedModel.getContent(),
+                pagedModel.getMetadata());
+        customPagedModel.addLinks(pagedModel.getLinks());
+
+        Link addBudgetLink = linkTo(methodOn(BudgetApi.class).createBudget(null)).withRel("add").withType("POST");
+        customPagedModel.add(addBudgetLink);
+
+        return ResponseEntity.ok(customPagedModel);
     }
 
+    /**
+     * Deletes a budget by its ID.
+     *
+     * @param id The ID of the budget to delete.
+     * @return ResponseEntity containing links to the list of budgets.
+     * @throws NotFoundError if the budget is not found.
+     */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a budget", description = "Deletes a budget for the given ID",
+    @Operation(summary = "Delete a budget", description = "Deletes a budget by its ID.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "Budget deleted"),
-                    @ApiResponse(responseCode = "404", description = "Budget not found")
+                    @ApiResponse(responseCode = "204", description = "Budget deleted successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+                    @ApiResponse(responseCode = "404", description = "Budget not found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             })
-    public ResponseEntity<Void> delete(@Parameter(description = "ID of the budget to delete") @PathVariable Long id) throws NotFoundError {
+    public ResponseEntity<LinksDTO> deleteBudget(@PathVariable @Parameter(description = "ID of the budget to delete") Long id) throws NotFoundError {
         budgetService.delete(id);
-        return ResponseEntity.noContent().build();
+
+        LinksDTO linksDTO = new LinksDTO();
+        linksDTO.add(linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
+
+        return ResponseEntity.ok(linksDTO);
+    }
+
+    /**
+     * Adds detailed links to the given EntityModel.
+     *
+     * @param entityModel The EntityModel to which links are added.
+     */
+    private void addDetailLinks(EntityModel<BudgetDTO> entityModel) {
+        BudgetDTO budgetDTO = entityModel.getContent();
+        Long budgetId = Objects.requireNonNull(budgetDTO).getId();
+
+        // IANA Links
+        entityModel.add(linkTo(methodOn(BudgetApi.class).getBudgetById(budgetId)).withSelfRel().withType("GET"));
+        entityModel.add(linkTo(methodOn(BudgetApi.class).getAllBudgets(Pageable.unpaged())).withRel(IanaLinkRelations.COLLECTION).withType("GET"));
+        entityModel.add(linkTo(methodOn(CategoryApi.class).getCategoryById(budgetDTO.getCategoryId())).withRel("category").withType("GET"));
+
+        // Control Links
+        entityModel.add(linkTo(methodOn(BudgetApi.class).updateBudget(budgetId, budgetDTO)).withRel("edit").withType("PUT"));
+        entityModel.add(linkTo(methodOn(BudgetApi.class).deleteBudget(budgetId)).withRel("delete").withType("DELETE"));
     }
 }

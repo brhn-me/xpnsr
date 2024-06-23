@@ -24,37 +24,31 @@ public class SecurityConfig {
         this.apiKeyAuthFilter = apiKeyAuthFilter;
     }
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(
-//                                "/v3/api-docs/**",
-//                                "/swagger-ui.html",
-//                                "/swagger-ui/**",
-//                                "/swagger-resources/**",
-//                                "/webjars/**"
-//                        ).permitAll()
-//                        .anyRequest().authenticated())
-//                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class);
-//        return http.build();
-//    }
-
+    /**
+     * Configures the security filter chain for HTTP requests.
+     *
+     * @param http HttpSecurity object to configure security settings
+     * @return SecurityFilterChain instance
+     * @throws Exception if configuration fails
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // Disable CSRF protection
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // permit all requests by default
+                        .requestMatchers("/**").permitAll() // Permit all requests by default
                 )
-                // apply API key filter for /api/** in the filter itself
-                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class); // Add custom API key filter
 
-        return http.build();
+        return http.build(); // Build and return the configured SecurityFilterChain
     }
 
+    /**
+     * Configures custom OpenAPI documentation for the API.
+     *
+     * @return OpenAPI instance with custom documentation
+     */
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()

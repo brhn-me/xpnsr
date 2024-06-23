@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Optional;
 
+/**
+ * Service class for managing operations related to users.
+ */
 @Service
 public class UserService {
 
@@ -22,7 +25,13 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-
+    /**
+     * Constructs a UserService with necessary repositories, mappers, and password encoder.
+     *
+     * @param userRepository The repository for accessing User entities.
+     * @param userMapper The mapper for converting between User and UserDTO.
+     * @param passwordEncoder The encoder for encoding user passwords.
+     */
     @Autowired
     public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -30,6 +39,13 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Adds a new user.
+     *
+     * @param u The UserDTO containing user information.
+     * @return The created UserDTO.
+     * @throws UserExistsError if a user with the same email already exists.
+     */
     public UserDTO add(UserDTO u) throws UserExistsError {
         Optional<User> existingUser = userRepository.findByEmail(u.getEmail());
         if (existingUser.isPresent()) {
@@ -44,15 +60,24 @@ public class UserService {
         return userMapper.userToUserDTO(user);
     }
 
+    /**
+     * Updates an existing user.
+     *
+     * @param id The ID of the user to update.
+     * @param u The updated UserDTO.
+     * @return The updated UserDTO.
+     * @throws NotFoundError if the user with the specified ID cannot be found.
+     * @throws UserExistsError if another user already exists with the updated email.
+     */
     public UserDTO update(Long id, UserDTO u) throws NotFoundError, UserExistsError {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
 
-        // check for new email
-//        if (userRepository.findByEmail(u.getEmail()).isPresent()) {
-//            throw new UserExistsError("Another user already exists with email: " + u.getEmail());
-//        }
+        // Check if the new email is already in use by another user
+        if (!user.getEmail().equals(u.getEmail()) && userRepository.findByEmail(u.getEmail()).isPresent()) {
+            throw new UserExistsError("Another user already exists with email: " + u.getEmail());
+        }
 
         user.setFirstName(u.getFirstName());
         user.setLastName(u.getLastName());
@@ -64,6 +89,13 @@ public class UserService {
         return userMapper.userToUserDTO(user);
     }
 
+    /**
+     * Retrieves a user by ID.
+     *
+     * @param id The ID of the user to retrieve.
+     * @return The UserDTO corresponding to the ID.
+     * @throws NotFoundError if the user with the specified ID cannot be found.
+     */
     public UserDTO getById(Long id) throws NotFoundError {
         Optional<User> user = userRepository.findById(id);
         if (user.isEmpty()) {
@@ -72,6 +104,13 @@ public class UserService {
         return userMapper.userToUserDTO(user.get());
     }
 
+    /**
+     * Retrieves a user by email.
+     *
+     * @param email The email address of the user to retrieve.
+     * @return The User entity corresponding to the email address.
+     * @throws NotFoundError if the user with the specified email cannot be found.
+     */
     public User getByEmail(String email) throws NotFoundError {
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
@@ -80,14 +119,24 @@ public class UserService {
         return user.get();
     }
 
+    /**
+     * Retrieves a page of users.
+     *
+     * @param pageable The pagination information.
+     * @return A Page of UserDTOs.
+     */
     public Page<UserDTO> list(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
         return users.map(userMapper::userToUserDTO);
     }
 
+    /**
+     * Deletes a user by ID.
+     *
+     * @param id The ID of the user to delete.
+     */
     public void delete(Long id) {
         Optional<User> user = userRepository.findById(id);
         user.ifPresent(userRepository::delete);
     }
 }
-

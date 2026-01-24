@@ -34,18 +34,18 @@ async def seed_data():
             ("Salary", "income", "wallet", [
                 ("Full-Time", "briefcase"),
                 ("Freelance", "briefcase"),
-                ("Bonus", "dollar-sign")
+                ("Bonus", "hand-coins")
             ]),
             ("Investments", "income", "trending-up", [
-                ("Dividends", "trending-up"),
-                ("Crypto", "banknote"),
+                ("Dividends", "coins"),
+                ("Crypto", "bitcoin"),
                 ("Real Estate", "building")
             ]),
             ("Gifts & Grants", "income", "gift", [
                 ("Birthday", "gift"), 
                 ("Holidays", "gift")
             ]),
-             ("Other Income", "income", "piggy-bank", [])
+             ("Other Income", "income", "landmark", [])
         ]
 
         expense_data = [
@@ -57,10 +57,10 @@ async def seed_data():
                 ("Furniture", "armchair")
             ]),
             ("Food & Drink", "expense", "utensils", [
-                ("Groceries", "shopping-cart"),
-                ("Dining Out", "utensils"),
-                ("Coffee", "coffee"),
-                ("Alcohol", "utensils")
+                ("Groceries", "apple"),
+                ("Dining Out", "coffee"),
+                ("Drinks", "beer"),
+                ("Snacks", "cookie")
             ]),
             ("Transportation", "expense", "car", [
                 ("Fuel", "fuel"),
@@ -79,18 +79,19 @@ async def seed_data():
                 ("Movies & TV", "tv"),
                 ("Games", "gamepad"),
                 ("Music", "music"),
-                ("Subscriptions", "credit-card"),
+                ("Subscriptions", "repeat"),
                 ("Events", "ticket") 
             ]),
             ("Health", "expense", "heart", [
                 ("Doctor", "user"),
                 ("Pharmacy", "pill"),
-                ("Health Insurance", "briefcase")
+                ("Hospital", "hospital"),
+                ("Health Insurance", "shield")
             ]),
              ("Education", "expense", "graduation-cap", [
-                ("Tuition", "graduation-cap"),
-                ("Books", "graduation-cap"),
-                ("Courses", "graduation-cap")
+                ("Tuition", "landmark"),
+                ("Books", "file-text"),
+                ("Courses", "file-text")
             ]),
              ("Miscellaneous", "expense", "globe", [
                 ("Donations", "gift"),

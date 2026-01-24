@@ -193,7 +193,7 @@ const CategoryRow = ({
                 </div>
 
                 {/* Inline Title Edit */}
-                <div className="flex-1 min-w-0 px-3">
+                <div className="flex flex-col flex-1 min-w-0 px-3">
                     {isEditingTitle ? (
                         <input
                             ref={inputRef}
@@ -204,7 +204,8 @@ const CategoryRow = ({
                             onKeyDown={handleKeyDown}
                             autoFocus
                             className={`
-                                w-full bg-transparent border-0 border-b border-blue-500 focus:ring-0 px-0 py-0.5
+                                w-full bg-transparent border-0 border-b border-dotted border-gray-400 dark:border-gray-500
+                                focus:ring-0 focus:outline-none px-0 py-0 leading-relaxed
                                 ${isSubcategory ? 'text-sm font-normal text-gray-700 dark:text-gray-300' : 'text-sm font-medium text-gray-900 dark:text-white'}
                             `}
                             placeholder={isSubcategory ? "Subcategory" : "Category"}
@@ -213,8 +214,8 @@ const CategoryRow = ({
                         <div
                             onClick={() => setIsEditingTitle(true)}
                             className={`
-                                cursor-text truncate transition-colors
-                                hover:text-blue-600 dark:hover:text-blue-400
+                                cursor-text truncate transition-all px-0 py-0 border-b border-transparent leading-relaxed
+                                hover:text-black dark:hover:text-white
                                 ${isSubcategory
                                     ? 'text-sm font-normal text-gray-600 dark:text-gray-400'
                                     : 'text-sm font-medium text-gray-900 dark:text-white'}

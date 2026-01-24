@@ -17,25 +17,25 @@ async def ensure_defaults(session: AsyncSession):
 
     defaults = [
         # INCOME
-        {"title": "Salary", "type": "income", "icon": "dollar-sign", "subcategories": [
-            {"title": "Bonus", "type": "income"},
-            {"title": "Regular", "type": "income"}
+        {"title": "Salary", "type": "income", "icon": "wallet", "subcategories": [
+            {"title": "Bonus", "type": "income", "icon": "hand-coins"},
+            {"title": "Regular", "type": "income", "icon": "banknote"}
         ]},
         {"title": "Freelance", "type": "income", "icon": "briefcase", "subcategories": [
-            {"title": "Contract", "type": "income"},
-            {"title": "Consulting", "type": "income"}
+            {"title": "Contract", "type": "income", "icon": "file-text"},
+            {"title": "Consulting", "type": "income", "icon": "file-text"}
         ]},
         {"title": "Investments", "type": "income", "icon": "trending-up", "subcategories": [
-            {"title": "Dividends", "type": "income"},
-            {"title": "Interest", "type": "income"},
-            {"title": "Crypto", "type": "income"}
+            {"title": "Dividends", "type": "income", "icon": "coins"},
+            {"title": "Interest", "type": "income", "icon": "percent"},
+            {"title": "Crypto", "type": "income", "icon": "bitcoin"}
         ]},
         {"title": "Gifts", "type": "income", "icon": "gift", "subcategories": []},
-        {"title": "Other Income", "type": "income", "icon": "banknote", "subcategories": []},
+        {"title": "Other Income", "type": "income", "icon": "landmark", "subcategories": []},
 
         # EXPENSES
         {"title": "Housing", "type": "expense", "icon": "home", "subcategories": [
-            {"title": "Rent", "type": "expense"},
+            {"title": "Rent", "type": "expense", "icon": "home"},
             {"title": "Utilities", "type": "expense", "icon": "zap"},
             {"title": "Internet", "type": "expense", "icon": "wifi"},
             {"title": "Maintenance", "type": "expense", "icon": "wrench"}
@@ -43,28 +43,29 @@ async def ensure_defaults(session: AsyncSession):
         {"title": "Food", "type": "expense", "icon": "utensils", "subcategories": [
             {"title": "Groceries", "type": "expense", "icon": "apple"},
             {"title": "Dining Out", "type": "expense", "icon": "coffee"},
-            {"title": "Snacks", "type": "expense"}
+            {"title": "Drinks", "type": "expense", "icon": "beer"},
+            {"title": "Snacks", "type": "expense", "icon": "cookie"}
         ]},
         {"title": "Transportation", "type": "expense", "icon": "car", "subcategories": [
             {"title": "Fuel", "type": "expense", "icon": "fuel"},
             {"title": "Public Transit", "type": "expense", "icon": "bus"},
-            {"title": "Maintenance", "type": "expense"},
-            {"title": "Parking", "type": "expense"}
+            {"title": "Maintenance", "type": "expense", "icon": "wrench"},
+            {"title": "Parking", "type": "expense", "icon": "landmark"}
         ]},
         {"title": "Entertainment", "type": "expense", "icon": "gamepad", "subcategories": [
             {"title": "Movies", "type": "expense", "icon": "tv"},
             {"title": "Music", "type": "expense", "icon": "music"},
-            {"title": "Games", "type": "expense"},
-            {"title": "Hobbies", "type": "expense"}
+            {"title": "Games", "type": "expense", "icon": "gamepad"},
+            {"title": "Hobbies", "type": "expense", "icon": "globe"}
         ]},
         {"title": "Health", "type": "expense", "icon": "heart", "subcategories": [
-            {"title": "Medical", "type": "expense"},
+            {"title": "Medical", "type": "expense", "icon": "hospital"},
             {"title": "Pharmacy", "type": "expense", "icon": "pill"},
             {"title": "Fitness", "type": "expense", "icon": "dumbbell"}
         ]},
         {"title": "Shopping", "type": "expense", "icon": "shopping-cart", "subcategories": [
             {"title": "Clothing", "type": "expense", "icon": "shirt"},
-            {"title": "Electronics", "type": "expense", "icon": "smartphone"},
+            {"title": "Electronics", "type": "expense", "icon": "cpu"},
             {"title": "Home", "type": "expense", "icon": "armchair"}
         ]},
         {"title": "Personal", "type": "expense", "icon": "user", "subcategories": [
@@ -72,14 +73,14 @@ async def ensure_defaults(session: AsyncSession):
             {"title": "Grooming", "type": "expense", "icon": "scissors"}
         ]},
         {"title": "Travel", "type": "expense", "icon": "plane", "subcategories": [
-            {"title": "Flights", "type": "expense"},
+            {"title": "Flights", "type": "expense", "icon": "plane"},
             {"title": "Accommodation", "type": "expense", "icon": "building"},
-            {"title": "Activities", "type": "expense"}
+            {"title": "Activities", "type": "expense", "icon": "ticket"}
         ]},
         {"title": "Bills & Fees", "type": "expense", "icon": "credit-card", "subcategories": [
             {"title": "Phone", "type": "expense", "icon": "smartphone"},
-            {"title": "Insurance", "type": "expense"},
-            {"title": "Taxes", "type": "expense"}
+            {"title": "Insurance", "type": "expense", "icon": "shield"},
+            {"title": "Taxes", "type": "expense", "icon": "receipt"}
         ]}
     ]
     

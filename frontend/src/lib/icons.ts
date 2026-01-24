@@ -17,9 +17,18 @@ import {
     User, Shirt, Scissors, Pill, Dumbbell,
     Heart, GraduationCap,
 
-    // Misc & Entertainment (8)
+    // Misc & Entertainment (12)
     Gift, Music, Gamepad, Camera, Headphones,
-    PawPrint, Baby, Globe
+    PawPrint, Baby, Globe, Ticket, Repeat,
+    Bitcoin, Coins,
+
+    // Finance & Medical (10)
+    Percent, ShieldCheck, ReceiptText, HandCoins,
+    Stethoscope, Activity, Hospital, Cpu,
+    Landmark, FileText,
+
+    // Food & Life (5)
+    ChefHat, Pizza, Beer, Wine, Cookie
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -33,6 +42,10 @@ export const ICON_MAP: Record<string, LucideIcon> = {
     'banknote': Banknote,
     'piggy-bank': PiggyBank,
     'building': Building2,
+    'coins': Coins,
+    'bitcoin': Bitcoin,
+    'landmark': Landmark,
+    'hand-coins': HandCoins,
 
     // Housing
     'home': Home,
@@ -43,12 +56,18 @@ export const ICON_MAP: Record<string, LucideIcon> = {
     'tv': Tv,
     'armchair': Armchair,
     'wrench': Wrench,
+    'shield': ShieldCheck,
 
     // Food
     'utensils': Utensils,
     'coffee': Coffee,
     'shopping-cart': ShoppingCart,
     'apple': Apple,
+    'chef-hat': ChefHat,
+    'pizza': Pizza,
+    'beer': Beer,
+    'wine': Wine,
+    'cookie': Cookie,
 
     // Transport
     'car': Car,
@@ -65,6 +84,10 @@ export const ICON_MAP: Record<string, LucideIcon> = {
     'dumbbell': Dumbbell,
     'heart': Heart,
     'graduation-cap': GraduationCap,
+    'stethoscope': Stethoscope,
+    'activity': Activity,
+    'hospital': Hospital,
+    'cpu': Cpu,
 
     // Misc
     'gift': Gift,
@@ -74,7 +97,12 @@ export const ICON_MAP: Record<string, LucideIcon> = {
     'headphones': Headphones,
     'paw-print': PawPrint,
     'baby': Baby,
-    'globe': Globe
+    'globe': Globe,
+    'ticket': Ticket,
+    'repeat': Repeat,
+    'percent': Percent,
+    'receipt': ReceiptText,
+    'file-text': FileText
 };
 
 export const ICONS_LIST = Object.keys(ICON_MAP);

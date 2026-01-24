@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from src.categories.models import Category
+from src.categories.router import generate_slug
 
 async def ensure_defaults(session: AsyncSession):
     # Check if exists
@@ -15,26 +16,44 @@ async def ensure_defaults(session: AsyncSession):
     print("Populating default categories (DB is empty)...")
 
     defaults = [
-        {"id": "housing", "title": "Housing", "type": "expense", "icon": "home", "subcategories": [
-            {"id": "rent", "title": "Rent", "type": "expense"},
-            {"id": "utilities", "title": "Utilities", "type": "expense"}
+        {"title": "Housing", "type": "expense", "icon": "home", "subcategories": [
+            {"title": "Rent", "type": "expense"},
+            {"title": "Utilities", "type": "expense"}
         ]},
-        {"id": "food", "title": "Food", "type": "expense", "icon": "utensils", "subcategories": [
-            {"id": "groceries", "title": "Groceries", "type": "expense"},
-            {"id": "dining_out", "title": "Dining Out", "type": "expense"}
+        {"title": "Food", "type": "expense", "icon": "utensils", "subcategories": [
+            {"title": "Groceries", "type": "expense"},
+            {"title": "Dining Out", "type": "expense"}
         ]},
-        {"id": "salary", "title": "Salary", "type": "income", "icon": "dollar-sign", "subcategories": []},
-        {"id": "freelance", "title": "Freelance", "type": "income", "icon": "briefcase", "subcategories": []}
+        {"title": "Salary", "type": "income", "icon": "dollar-sign", "subcategories": []},
+        {"title": "Freelance", "type": "income", "icon": "briefcase", "subcategories": []}
     ]
     
+    order_counter = 0
     for cat_data in defaults:
         subs = cat_data.pop("subcategories")
-        cat = Category(**cat_data)
+        
+        # Create Slug
+        slug = generate_slug(cat_data["title"])
+        
+        cat = Category(
+            **cat_data,
+            slug=slug,
+            sort_order=order_counter
+        )
+        order_counter += 1
+        
         session.add(cat)
+        await session.flush() # Flush to get ID for subcategories
         
         for sub in subs:
-            sub["parent_category_id"] = cat.id
-            sub_cat = Category(**sub)
+            sub_slug = generate_slug(sub["title"])
+            sub_cat = Category(
+                **sub,
+                slug=sub_slug,
+                parent_category_id=cat.id, # Now UUID
+                sort_order=order_counter 
+            )
+            order_counter += 1
             session.add(sub_cat)
     
     await session.commit()

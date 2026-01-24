@@ -11,13 +11,16 @@ class TransactionType(str, Enum):
     EXPENSE = "expense"
 
 class CategoryBase(SQLModel):
-    id: str = Field(primary_key=True) # unique string, lowercase underscored
     title: str
     type: TransactionType
     icon: str | None = None
-    parent_category_id: str | None = Field(default=None, foreign_key="category.id")
+    slug: str = Field(index=True, unique=True, nullable=False)
+    sort_order: int = Field(default=0)
+    parent_category_id: uuid.UUID | None = Field(default=None, foreign_key="category.id")
 
 class Category(CategoryBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    
     parent: Optional["Category"] = Relationship(back_populates="subcategories", sa_relationship_kwargs={"remote_side": "Category.id"})
     subcategories: List["Category"] = Relationship(back_populates="parent")
     transactions: List["Transaction"] = Relationship(back_populates="category")

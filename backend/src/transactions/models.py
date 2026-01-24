@@ -11,7 +11,7 @@ class TransactionBase(SQLModel):
     title: str
     description: str | None = None
     date: datetime = Field(default_factory=datetime.utcnow)
-    category_id: str = Field(foreign_key="category.id")
+    category_id: uuid.UUID = Field(foreign_key="category.id")
     subcategory_id: str | None = None # Optional, effectively logic handled in frontend or separate FK if we want strict enforcement? For now just string or FK to category.
     # User asked for subcategory. If subcategory is just a Category with a parent, then it is a Category.
     # Refined: We can just have category_id pointing to the subcategory. 

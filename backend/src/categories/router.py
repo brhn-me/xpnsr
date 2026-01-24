@@ -44,7 +44,10 @@ async def create_category(
     category = Category.from_orm(category_in)
     session.add(category)
     await session.commit()
-    await session.refresh(category)
+    
+    # Eagerly load subcategories for the response serialization
+    stmt = select(Category).where(Category.id == category_in.id).options(selectinload(Category.subcategories))
+    category = (await session.execute(stmt)).scalar_one()
     return category
 
 @router.patch("/{category_id}", response_model=CategoryRead)
@@ -64,6 +67,9 @@ async def update_category(
         
     session.add(category)
     await session.commit()
-    await session.refresh(category)
+    
+    # Eagerly load subcategories for the response serialization
+    stmt = select(Category).where(Category.id == category_id).options(selectinload(Category.subcategories))
+    category = (await session.execute(stmt)).scalar_one()
     return category
 

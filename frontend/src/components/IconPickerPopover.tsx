@@ -12,21 +12,48 @@ interface IconPickerPopoverProps {
 
 const IconPickerPopover: React.FC<IconPickerPopoverProps> = ({ currentIcon, onSelect, onClose, isOpen, triggerRef }) => {
     const popoverRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState({ top: 0, left: 0 });
+    const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
 
     useEffect(() => {
         if (isOpen && triggerRef.current) {
             const updatePosition = () => {
                 if (triggerRef.current) {
                     const rect = triggerRef.current.getBoundingClientRect();
-                    const scrollY = window.scrollY;
-                    const scrollX = window.scrollX;
-                    setPosition({
-                        top: rect.bottom + scrollY + 5,
-                        left: rect.left + scrollX
-                    });
+                    const POPOVER_WIDTH = 280; // w-64 is 256px + padding/borders
+                    const POPOVER_HEIGHT = 320; // Approx height
+
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const spaceAbove = rect.top;
+                    const spaceRight = window.innerWidth - rect.left;
+
+                    // Decision Logic
+                    const showAbove = spaceBelow < POPOVER_HEIGHT && spaceAbove > spaceBelow;
+                    const showLeft = spaceRight < POPOVER_WIDTH;
+
+                    const newStyle: React.CSSProperties = {};
+
+                    // Vertical Positioning
+                    if (showAbove) {
+                        newStyle.bottom = window.innerHeight - rect.top + 8; // 8px spacing
+                        newStyle.transformOrigin = 'bottom';
+                    } else {
+                        newStyle.top = rect.bottom + 8;
+                        newStyle.transformOrigin = 'top';
+                    }
+
+                    // Horizontal Positioning
+                    if (showLeft) {
+                        newStyle.right = window.innerWidth - rect.right;
+                        newStyle.transformOrigin += ' right';
+                    } else {
+                        newStyle.left = rect.left;
+                        newStyle.transformOrigin += ' left';
+                    }
+
+                    setPopoverStyle(newStyle);
                 }
             };
+
             updatePosition();
             window.addEventListener('scroll', updatePosition, true);
             window.addEventListener('resize', updatePosition);
@@ -64,11 +91,8 @@ const IconPickerPopover: React.FC<IconPickerPopoverProps> = ({ currentIcon, onSe
     return createPortal(
         <div
             ref={popoverRef}
-            className="fixed z-[9999] p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 w-64 grid grid-cols-5 gap-2 animate-in fade-in zoom-in-95 duration-200"
-            style={{
-                top: position.top,
-                left: position.left,
-            }}
+            className="fixed z-[9999] p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 w-64 grid grid-cols-5 gap-2 animate-in fade-in zoom-in-0 duration-200"
+            style={popoverStyle}
         >
             {ICONS_LIST.map((iconName) => {
                 const Icon = getIconComponent(iconName);

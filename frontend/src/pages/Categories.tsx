@@ -98,7 +98,7 @@ interface CategoryRowProps {
 const CategoryRow = ({
     category, onUpdate, onDeleteRaw, onAddSub, onRequestDelete,
     isSubcategory = false, isExpanded = false, onToggleExpand, hasSubcategories = false,
-    dragAttributes, dragListeners
+    dragAttributes, dragListeners, disabled = false
 }: CategoryRowProps) => {
     const [isEditingTitle, setIsEditingTitle] = useState(category.isNew || false);
     const [title, setTitle] = useState(category.title);
@@ -107,6 +107,7 @@ const CategoryRow = ({
     const triggerRef = useRef<HTMLButtonElement>(null);
 
     const IconComponent = getIconComponent(category.icon);
+    const canDrag = !category.isNew && !disabled;
 
     useEffect(() => {
         if ((isEditingTitle || category.isNew) && inputRef.current) {
@@ -142,25 +143,29 @@ const CategoryRow = ({
     return (
         <div
             className={`
-                group flex justify-between items-center px-3 py-2 transition-all duration-200
+                group relative flex justify-between items-center py-2 transition-all duration-200 ease-in-out
                 ${isSubcategory
-                    ? 'pl-10 pr-4 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-t-xl'}
+                    ? `pr-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${canDrag ? 'pl-10' : 'pl-10'}`
+                    : `pr-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-t-xl ${canDrag ? 'pl-3 hover:pl-9' : 'pl-3'}`
+                }
             `}
         >
-            <div className="flex items-center gap-2 w-full min-w-0">
-                {/* Drag Handle */}
+            {/* Drag Handle (Absolute Left - Only if draggable) */}
+            {canDrag && (
                 <button
                     {...dragAttributes}
                     {...dragListeners}
                     className={`
-                        p-0.5 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing outline-none
-                        ${category.isNew ? 'opacity-0 cursor-default' : ''}
+                        absolute top-1/2 -translate-y-1/2 p-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                        left-2
                     `}
+                    title="Drag to reorder"
                 >
                     <GripVertical className="w-4 h-4" />
                 </button>
+            )}
 
+            <div className="flex items-center gap-2 w-full min-w-0">
                 {/* Icon */}
                 <div className="relative shrink-0">
                     <button
@@ -188,7 +193,7 @@ const CategoryRow = ({
                 </div>
 
                 {/* Inline Title Edit */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 px-3">
                     {isEditingTitle ? (
                         <input
                             ref={inputRef}
@@ -220,7 +225,7 @@ const CategoryRow = ({
                     )}
                 </div>
 
-                {/* Actions (Left of Toggle) */}
+                {/* Actions (Right Side) */}
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity mr-2">
                     {!isSubcategory && onAddSub && (
                         <button
@@ -381,46 +386,52 @@ const CategoryTreeItem = ({ category, onUpdate, onDeleteRaw, onAddSub, onRequest
                 isSubcategory={false}
             />
 
-            {isExpanded && subcats.length > 0 && (
-                <div className="flex flex-col border-t border-gray-100 dark:border-gray-700">
-                    {/* Inner DndContext for subcategories */}
-                    <DndContext
-                        sensors={sensors}
-                        modifiers={[restrictToVerticalAxis]}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                    >
-                        <SortableContext
-                            id={`sub-${category.id}`}
-                            items={subcats.map(c => c.id)}
-                            strategy={verticalListSortingStrategy}
-                        >
-                            <div className="pb-1 bg-gray-50/30 dark:bg-gray-900/10">
-                                {subcats.map(sub => (
-                                    <SortableChildRow
-                                        key={sub.id}
-                                        category={sub}
-                                        onUpdate={onUpdate}
-                                        onDeleteRaw={onDeleteRaw}
-                                        onRequestDelete={onRequestDelete}
-                                        isSubcategory={true}
-                                        disabled={!isSubDragEnabled} // Disable drag if only one subcategory
-                                    />
-                                ))}
-                            </div>
-                        </SortableContext>
-                        <DragOverlay modifiers={[restrictToVerticalAxis]}>
-                            {activeSub ? (
-                                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md rounded-lg overflow-hidden opacity-95 pointer-events-none">
-                                    <CategoryRow
-                                        category={activeSub}
-                                        onUpdate={() => { }}
-                                        isSubcategory={true}
-                                    />
-                                </div>
-                            ) : null}
-                        </DragOverlay>
-                    </DndContext>
+            {subcats.length > 0 && (
+                <div
+                    className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                >
+                    <div className="overflow-hidden">
+                        <div className="flex flex-col border-t border-gray-100 dark:border-gray-700">
+                            {/* Inner DndContext for subcategories */}
+                            <DndContext
+                                sensors={sensors}
+                                modifiers={[restrictToVerticalAxis]}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    id={`sub-${category.id}`}
+                                    items={subcats.map(c => c.id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <div className="pb-1 bg-gray-50/30 dark:bg-gray-900/10">
+                                        {subcats.map(sub => (
+                                            <SortableChildRow
+                                                key={sub.id}
+                                                category={sub}
+                                                onUpdate={onUpdate}
+                                                onDeleteRaw={onDeleteRaw}
+                                                onRequestDelete={onRequestDelete}
+                                                isSubcategory={true}
+                                                disabled={!isSubDragEnabled} // Disable drag if only one subcategory
+                                            />
+                                        ))}
+                                    </div>
+                                </SortableContext>
+                                <DragOverlay modifiers={[restrictToVerticalAxis]}>
+                                    {activeSub ? (
+                                        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md rounded-lg overflow-hidden opacity-95 pointer-events-none">
+                                            <CategoryRow
+                                                category={activeSub}
+                                                onUpdate={() => { }}
+                                                isSubcategory={true}
+                                            />
+                                        </div>
+                                    ) : null}
+                                </DragOverlay>
+                            </DndContext>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
-    FIRST_SUPERUSER: str = "test@example.com"
-    FIRST_SUPERUSER_PASSWORD: str = "password"
+    SUPER_ADMIN: str = "test@example.com"
+    SUPER_ADMIN_PASSWORD: str = "password"
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:

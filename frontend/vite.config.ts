@@ -8,4 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    watch: {
+      ignored: ['**/.pnpm-store/**', '**/node_modules/**', '**/.git/**'],
+    },
+  },
 })

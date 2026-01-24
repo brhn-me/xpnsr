@@ -746,8 +746,8 @@ const Categories: React.FC = () => {
         }
     };
 
-    const incomeCategories = sortedCategories.filter((c) => c.type === 'income') || [];
-    const expenseCategories = sortedCategories.filter((c) => c.type === 'expense') || [];
+    const incomeCategories = sortedCategories.filter((c) => c.type === 'income' && !c.parent_category_id) || [];
+    const expenseCategories = sortedCategories.filter((c) => c.type === 'expense' && !c.parent_category_id) || [];
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 pb-20">

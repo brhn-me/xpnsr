@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-    Plus, ArrowDownCircle, ArrowUpCircle, GripVertical, Check,
+    Plus, ArrowDownCircle, ArrowUpCircle, GripVertical,
     ChevronDown, ChevronRight, Trash2, AlertTriangle
 } from 'lucide-react';
 import {
@@ -38,6 +38,7 @@ interface Category {
     parent_category_id?: string | null;
     subcategories?: Category[];
     isNew?: boolean;
+    transaction_count?: number;
 }
 
 // --- Delete Confirmation Modal ---
@@ -45,30 +46,70 @@ interface DeleteConfirmProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
-    categoryTitle: string;
+    category: Category | null;
 }
 
-const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, categoryTitle }: DeleteConfirmProps) => {
+const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, category }: DeleteConfirmProps) => {
+    if (!category) return null;
+
+    const getRecursiveCount = (cat: Category): number => {
+        let count = cat.transaction_count || 0;
+        if (cat.subcategories) {
+            cat.subcategories.forEach(sub => {
+                count += getRecursiveCount(sub);
+            });
+        }
+        return count;
+    };
+
+    const totalCount = getRecursiveCount(category);
+    const hasTransactions = totalCount > 0;
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Delete Category">
             <div className="pt-2 space-y-6">
                 <div className="flex flex-col items-center text-center space-y-3 px-4">
-                    <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-                        <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-500" />
+                    <div className={`p-3 rounded-full ${hasTransactions ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                        {hasTransactions ? (
+                            <AlertTriangle className="w-8 h-8 text-orange-600 dark:text-orange-500" />
+                        ) : (
+                            <Trash2 className="w-8 h-8 text-red-600 dark:text-red-500" />
+                        )}
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Delete "{categoryTitle}"?</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            This will also delete <strong>all nested subcategories</strong> and transactions involved.
-                            This action cannot be undone.
-                        </p>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Delete "{category.title}"?</h3>
+                        {hasTransactions ? (
+                            <div className="mt-2 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl">
+                                <p className="text-sm font-semibold text-orange-800 dark:text-orange-300">
+                                    Deletion Blocked
+                                </p>
+                                <p className="text-xs text-orange-700 dark:text-orange-400 mt-1">
+                                    There are <strong>{totalCount} transactions</strong> linked to this category or its subcategories.
+                                    Please delete those transactions first.
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                This will also delete all nested subcategories.
+                                This action cannot be undone.
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-2">
                     <button onClick={onClose} className="w-full py-3 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
                         Cancel
                     </button>
-                    <button onClick={onConfirm} className="w-full py-3 font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-lg shadow-red-600/20">
+                    <button
+                        onClick={onConfirm}
+                        disabled={hasTransactions}
+                        className={`
+                            w-full py-3 font-bold text-white rounded-xl transition-all shadow-lg 
+                            ${hasTransactions
+                                ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
+                                : 'bg-red-600 hover:bg-red-700 shadow-red-600/20'}
+                        `}
+                    >
                         Delete
                     </button>
                 </div>
@@ -505,7 +546,7 @@ const Categories: React.FC = () => {
     const updateMutation = useMutation({
         mutationFn: async ({ id, updates }: { id: string, updates: Partial<Category> }) => {
             let target: Category | undefined;
-            const findRecursive = (cats: Category[]) => {
+            const findRecursive = (cats: Category[]): Category | undefined => {
                 for (const cat of cats) {
                     if (cat.id === id) return cat;
                     if (cat.subcategories) {
@@ -527,7 +568,7 @@ const Categories: React.FC = () => {
                 return await api.patch(`/categories/${id}`, updates);
             }
         },
-        onSuccess: (data, variables) => {
+        onSuccess: (_data, variables) => {
             if (variables.id.startsWith('temp-')) {
                 setSortedCategories(prev => {
                     const clean = (cats: Category[]): Category[] => {
@@ -834,7 +875,7 @@ const Categories: React.FC = () => {
                 isOpen={deleteModalOpen}
                 onClose={() => setDeleteModalOpen(false)}
                 onConfirm={onConfirmDelete}
-                categoryTitle={categoryToDelete?.title || ''}
+                category={categoryToDelete}
             />
         </div>
     );

@@ -22,17 +22,37 @@ def generate_slug(title: str) -> str:
     slug = slug.strip('_')
     return slug
 
+from sqlalchemy import func
+
 @router.get("", response_model=List[CategoryRead])
 async def get_categories(
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user: Annotated[User, Depends(get_active_user)]
 ):
-    # Return all categories sorted by sort_order
-    stmt = select(Category).options(selectinload(Category.subcategories).selectinload(Category.subcategories)).order_by(Category.sort_order)
+    # 1. Get all categories sorted by order
+    stmt = select(Category).order_by(Category.sort_order)
     result = await session.execute(stmt)
     categories = result.scalars().all()
 
-    return categories
+    # 2. Build map and tree in memory
+    cat_map = {}
+    for cat in categories:
+        data = cat.model_dump()
+        cat_read = CategoryRead(**data)
+        cat_map[cat.id] = cat_read
+    
+    root_categories = []
+
+    for cat in categories:
+        cat_read = cat_map[cat.id]
+        if cat.parent_category_id:
+            parent = cat_map.get(cat.parent_category_id)
+            if parent:
+                parent.subcategories.append(cat_read)
+        else:
+            root_categories.append(cat_read)
+
+    return root_categories
 
 @router.post("", response_model=CategoryRead)
 async def create_category(
@@ -125,7 +145,30 @@ async def delete_category(
     category = await session.get(Category, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-        
-    session.delete(category)
+    
+    # Check if category has any transactions (direct or through subcategories)
+    from src.transactions.models import Transaction
+    
+    # Check direct transactions
+    stmt = select(func.count(Transaction.id)).where(Transaction.category_id == category_id)
+    direct_transactions = (await session.execute(stmt)).scalar() or 0
+    
+    if direct_transactions > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete category '{category.title}' because it has {direct_transactions} transactions associated with it.")
+    
+    # Check subcategories for transactions
+    stmt = select(Category.id).where(Category.parent_category_id == category_id)
+    subcat_ids = (await session.execute(stmt)).scalars().all()
+    
+    if subcat_ids:
+        stmt = select(func.count(Transaction.id)).where(Transaction.category_id.in_(subcat_ids))
+        sub_transactions = (await session.execute(stmt)).scalar() or 0
+        if sub_transactions > 0:
+            raise HTTPException(status_code=400, detail=f"Cannot delete category '{category.title}' because its subcategories have {sub_transactions} transactions associated.")
+
+    print(f"--- DELETION START: {category_id} ({category.title}) ---")
+    await session.delete(category)
+    print(f"Session.delete called. Committing...")
     await session.commit()
+    print(f"Commit successful for {category_id}")
     return None

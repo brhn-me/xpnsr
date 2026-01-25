@@ -6,9 +6,10 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
     const modalRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -29,6 +30,16 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
     if (!isOpen) return null;
 
+    const sizeClasses = {
+        sm: 'max-w-sm',
+        md: 'max-w-md',
+        lg: 'max-w-lg',
+        xl: 'max-w-xl',
+        '2xl': 'max-w-2xl',
+        '3xl': 'max-w-3xl',
+        '4xl': 'max-w-4xl',
+    };
+
     return (
         <div className={`
             fixed inset-0 z-50 flex items-center justify-center p-4 
@@ -46,7 +57,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
                 ref={modalRef}
                 className={`
                     bg-white dark:bg-gray-800 rounded-2xl shadow-2xl 
-                    w-full max-w-md overflow-hidden relative z-10
+                    w-full ${sizeClasses[size]} overflow-hidden relative z-10
                     transition-all duration-300 ease-out transform
                     ${isOpen ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-4 opacity-0'}
                 `}

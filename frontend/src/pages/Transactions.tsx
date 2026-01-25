@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { format } from 'date-fns';
 import { Search, Filter, Edit2, Trash2, Calendar, FileText, Clock, X, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
-
 import Modal from '../components/Modal';
 import { getIconComponent } from '../lib/icons';
 
@@ -48,9 +47,12 @@ const Transactions: React.FC = () => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [type, setType] = useState<'income' | 'expense'>('expense');
-    const [categoryId, setCategoryId] = useState('');
+    const [categoryId, setCategoryId] = useState(''); // Stores the FINAL selected category (could be parent or sub)
+    const [selectedParentId, setSelectedParentId] = useState<string>(''); // Used for UI navigation
+
+    // Date & Time Split
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [selectedParentId, setSelectedParentId] = useState<string>('');
+    const [time, setTime] = useState('');
 
     // Reset parent/category when modal closes or type changes, if not editing
     useEffect(() => {
@@ -99,9 +101,10 @@ const Transactions: React.FC = () => {
             setDescription(editingTx.description || '');
             setType(editingTx.type);
 
-            // Extract date only
+            // Extract date and time
             const dt = new Date(editingTx.date);
             setDate(dt.toISOString().split('T')[0]);
+            setTime(dt.toTimeString().split(' ')[0].slice(0, 5));
 
             // Handle Category Pre-selection
             const cat = categoryMap.get(editingTx.category_id);
@@ -204,28 +207,18 @@ const Transactions: React.FC = () => {
         setAmount('');
         setTitle('');
         setDescription('');
-        // setType('expense'); // Don't reset type here as it's set by the button click
         setCategoryId('');
         setSelectedParentId('');
         const now = new Date();
         setDate(now.toISOString().split('T')[0]);
+        setTime(now.toTimeString().split(' ')[0].slice(0, 5));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        let finalDate = new Date().toISOString();
-        if (editingTx) {
-            const originalInfo = new Date(editingTx.date);
-            const newDateParts = new Date(date);
-            originalInfo.setFullYear(newDateParts.getFullYear(), newDateParts.getMonth(), newDateParts.getDate());
-            finalDate = originalInfo.toISOString();
-        } else {
-            const now = new Date();
-            const selected = new Date(date);
-            now.setFullYear(selected.getFullYear(), selected.getMonth(), selected.getDate());
-            finalDate = now.toISOString();
-        }
+        // combine date and time
+        const combined = new Date(`${date}T${time}:00`).toISOString();
 
         const payload = {
             amount: parseFloat(amount),
@@ -233,7 +226,7 @@ const Transactions: React.FC = () => {
             description,
             type,
             category_id: categoryId,
-            date: finalDate
+            date: combined
         };
 
         if (editingTx) {
@@ -260,116 +253,6 @@ const Transactions: React.FC = () => {
         return categories.filter((c: Category) => c.type === type);
     }, [categories, type]);
 
-    const CustomSelect = ({
-        options,
-        value,
-        onChange,
-        placeholder,
-        label
-    }: {
-        options: Category[],
-        value: string,
-        onChange: (val: string) => void,
-        placeholder: string,
-        label: string
-    }) => {
-        const [isOpen, setIsOpen] = useState(false);
-        const selected = options.find(o => o.id === value);
-        const SelectedIcon = selected ? getIconComponent(selected.icon) : null;
-
-        return (
-            <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-                <button
-                    type="button"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="relative w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm pl-3 pr-10 py-2.5 text-left cursor-default focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
-                >
-                    <span className="flex items-center">
-                        {selected && SelectedIcon ? (
-                            <>
-                                <SelectedIcon className="flex-shrink-0 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                <span className="ml-3 block truncate text-gray-900 dark:text-white">{selected.title}</span>
-                            </>
-                        ) : (
-                            <span className="block truncate text-gray-400">{placeholder}</span>
-                        )}
-                    </span>
-                    <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                    </span>
-                </button>
-
-                {isOpen && (
-                    <>
-                        <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-                        <div className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 shadow-xl max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                            {options.map((option) => {
-                                const Icon = getIconComponent(option.icon);
-                                return (
-                                    <div
-                                        key={option.id}
-                                        onClick={() => {
-                                            onChange(option.id);
-                                            setIsOpen(false);
-                                        }}
-                                        className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-50 dark:hover:bg-gray-700 flex items-center ${value === option.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                                    >
-                                        <Icon className="flex-shrink-0 h-4 w-4 text-gray-500 dark:text-gray-400 mr-3" />
-                                        <span className={`block truncate ${value === option.id ? 'font-semibold text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`}>
-                                            {option.title}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </>
-                )}
-            </div>
-        );
-    };
-
-    const CategorySelect = () => {
-        const parents = activeCategories.filter(c => !c.parent_category_id);
-        const parent = categoryMap.get(selectedParentId);
-        const subcategories = parent?.subcategories || [];
-
-        const handleParentChange = (pid: string) => {
-            setSelectedParentId(pid);
-            setCategoryId(pid); // Default to parent ID
-        };
-
-        const handleSubChange = (sid: string) => {
-            setCategoryId(sid); // Update to sub ID
-        };
-
-        return (
-            <div className="space-y-4">
-                <CustomSelect
-                    label="Category"
-                    options={parents}
-                    value={selectedParentId}
-                    onChange={handleParentChange}
-                    placeholder="Select Primary Category"
-                />
-
-                {subcategories.length > 0 && (
-                    <div className="animate-fadeIn">
-                        <CustomSelect
-                            label="Subcategory (Optional)"
-                            options={subcategories}
-                            value={categoryId === selectedParentId ? '' : categoryId} // If ID matches parent, no sub selected
-                            onChange={handleSubChange}
-                            placeholder="Select Subcategory"
-                        />
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     const FilterPill = ({ label, value, current, onClick }: { label: string, value: string, current: string, onClick: (v: string) => void }) => (
         <button
             onClick={() => onClick(value)}
@@ -381,6 +264,87 @@ const Transactions: React.FC = () => {
             {label}
         </button>
     );
+
+    // --- NEW GRID COMPONENTS ---
+
+    // Parent Grid
+    const CategoryGrid = () => {
+        return (
+            <div className="grid grid-cols-5 gap-2"> {/* Increased columns for compactness */}
+                {activeCategories.map((cat) => {
+                    const Icon = getIconComponent(cat.icon);
+                    const isSelected = selectedParentId === cat.id;
+
+                    return (
+                        <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => {
+                                setSelectedParentId(cat.id);
+                                setCategoryId(cat.id); // Default to parent
+                            }}
+                            className={`flex flex-col items-center justify-center p-1.5 rounded-xl border-2 transition-all ${isSelected
+                                ? `border-${type === 'income' ? 'green' : 'red'}-500 bg-${type === 'income' ? 'green' : 'red'}-50 dark:bg-${type === 'income' ? 'green' : 'red'}-900/20`
+                                : 'border-transparent bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                }`}
+                        >
+                            <div className={`p-1.5 rounded-full mb-1 ${isSelected
+                                ? `bg-${type === 'income' ? 'green' : 'red'}-100 text-${type === 'income' ? 'green' : 'red'}-600`
+                                : 'bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-300'
+                                }`}>
+                                <Icon className="w-4 h-4" />
+                            </div>
+                            <span className={`text-[10px] font-medium text-center truncate w-full ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'
+                                }`}>
+                                {cat.title}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    // Subcategory Grid (Compact, with icons)
+    const SubcategoryGrid = () => {
+        const parent = activeCategories.find(c => c.id === selectedParentId);
+        if (!parent || !parent.subcategories || parent.subcategories.length === 0) return null;
+
+        // No "None" button, no label - purely the grid of subcategories
+        return (
+            <div className="animate-fadeIn mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="grid grid-cols-3 gap-2"> {/* Grid for subcategories too */}
+                    {parent.subcategories.map((sub) => {
+                        const Icon = getIconComponent(sub.icon);
+                        const isSelected = categoryId === sub.id;
+                        return (
+                            <button
+                                key={sub.id}
+                                type="button"
+                                onClick={() => setCategoryId(sub.id)}
+                                className={`flex items-center p-2 rounded-lg border transition-all ${isSelected
+                                    ? `bg-${type === 'income' ? 'green' : 'red'}-50 border-${type === 'income' ? 'green' : 'red'}-200`
+                                    : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600'
+                                    }`}
+                            >
+                                <div className={`p-1 rounded-full mr-2 ${isSelected
+                                    ? `bg-white text-${type === 'income' ? 'green' : 'red'}-600`
+                                    : 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300'
+                                    }`}>
+                                    <Icon className="w-3.5 h-3.5" />
+                                </div>
+                                <span className={`text-xs truncate ${isSelected ? `text-${type === 'income' ? 'green' : 'red'}-900` : 'text-gray-700 dark:text-gray-200'
+                                    }`}>
+                                    {sub.title}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
 
     return (
         <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -489,6 +453,7 @@ const Transactions: React.FC = () => {
                                                         </div>
                                                         {subName && (
                                                             <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
                                                                 {subName}
                                                             </div>
                                                         )}
@@ -592,8 +557,7 @@ const Transactions: React.FC = () => {
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
 
-
-                    {/* Row 1: Date & Amount */}
+                    {/* Row 1: Date & Time */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Date</label>
@@ -606,23 +570,41 @@ const Transactions: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Amount</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-2.5 text-gray-500 text-sm font-bold">$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    required
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    className="block w-full rounded-xl border-gray-200 bg-gray-50 pl-8 focus:border-blue-500 focus:ring-blue-500 text-sm py-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white font-mono font-semibold"
-                                    placeholder="0.00"
-                                />
-                            </div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Time</label>
+                            <input
+                                type="time"
+                                required
+                                value={time}
+                                onChange={(e) => setTime(e.target.value)}
+                                className="block w-full rounded-xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 text-sm py-2.5 px-3 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                            />
                         </div>
                     </div>
 
-                    <CategorySelect />
+                    {/* Row 2: Amount (Refined Font) */}
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Amount</label>
+                        <div className="relative">
+                            <span className="absolute left-4 top-3 text-gray-500 text-lg font-bold">$</span>
+                            <input
+                                type="number"
+                                step="0.01"
+                                required
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                // Changed font-mono to font-sans tracking-tight, but kept bold
+                                className="block w-full rounded-2xl border-gray-200 bg-gray-50 pl-9 focus:border-blue-500 focus:ring-blue-500 text-2xl py-3 dark:bg-gray-800 dark:border-gray-600 dark:text-white font-bold tracking-tight"
+                                placeholder="0.00"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Category Grids */}
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
+                        <CategoryGrid />
+                        <SubcategoryGrid />
+                    </div>
 
                     <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                         <div>
@@ -661,7 +643,7 @@ const Transactions: React.FC = () => {
                                 : 'bg-red-600 hover:bg-red-700 shadow-red-500/30 hover:shadow-red-500/40'
                                 }`}
                         >
-                            {editingTx ? 'Update' : 'Save'}
+                            {editingTx ? 'Update Transaction' : (type === 'income' ? 'Save Income' : 'Save Expense')}
                         </button>
                     </div>
                 </form>

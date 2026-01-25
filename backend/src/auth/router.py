@@ -7,6 +7,7 @@ from sqlmodel import select
 
 from src.core.database import get_session
 from src.core.security import get_password_hash, verify_password, create_access_token
+from src.core.deps import get_current_user
 from src.core.config import settings
 from src.auth.models import User
 from src.auth.schemas import UserCreate, UserRead, Token
@@ -45,3 +46,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], sess
         subject=user.email, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=UserRead)
+async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
+    return current_user

@@ -18,7 +18,12 @@ async def create_transaction(
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user: Annotated[User, Depends(get_active_user)]
 ):
-    transaction = Transaction(**transaction_in.dict(), user_id=current_user.id)
+    data = transaction_in.dict()
+    # Fix: remove timezone info as Postgres might complain if column is naive
+    if data.get('date'):
+        data['date'] = data['date'].replace(tzinfo=None)
+        
+    transaction = Transaction(**data, user_id=current_user.id)
     session.add(transaction)
     await session.commit()
     await session.refresh(transaction)
@@ -29,15 +34,20 @@ async def get_transactions(
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user: Annotated[User, Depends(get_active_user)],
     skip: int = 0,
-    limit: int = 20
+    limit: int = 20,
+    search: str | None = None,
+    type: str | None = None
 ):
-    # Helper query to join category for title?
-    # SQLModel should load relationships lazily or we can use response_model to auto-fetch?
-    # Async lazy loading is tricky. Better to eager load.
-    # For now, let's just return basic and relying on lazy load might fail in async Pydantic recursion if not careful.
-    # Actually, the schema expects `description` `title` which are on Transaction.
-    # But `category_title` is custom in Read Schema.
-    query = select(Transaction).where(Transaction.user_id == current_user.id).order_by(desc(Transaction.date)).offset(skip).limit(limit)
+    query = select(Transaction).where(Transaction.user_id == current_user.id)
+
+    if search:
+        # Case insensitive search on title
+        query = query.where(Transaction.title.ilike(f"%{search}%"))
+    
+    if type and type in ['income', 'expense']:
+        query = query.where(Transaction.type == type)
+
+    query = query.order_by(desc(Transaction.date)).offset(skip).limit(limit)
     result = await session.execute(query)
     transactions = result.scalars().all()
     # We might need to manually populate category_title or use a joined load.
@@ -45,3 +55,40 @@ async def get_transactions(
     # But user wants "clean code".
     # I'll update schema to just optional.
     return transactions
+
+@router.delete("/{transaction_id}")
+async def delete_transaction(
+    transaction_id: str,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_active_user)]
+):
+    transaction = await session.get(Transaction, transaction_id)
+    if not transaction or transaction.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    await session.delete(transaction)
+    await session.commit()
+    return {"ok": True}
+
+@router.put("/{transaction_id}", response_model=TransactionRead)
+async def update_transaction(
+    transaction_id: str,
+    transaction_in: TransactionCreate,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    current_user: Annotated[User, Depends(get_active_user)]
+):
+    transaction = await session.get(Transaction, transaction_id)
+    if not transaction or transaction.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    data = transaction_in.dict(exclude_unset=True)
+    if data.get('date'):
+        data['date'] = data['date'].replace(tzinfo=None)
+
+    for key, value in data.items():
+        setattr(transaction, key, value)
+
+    session.add(transaction)
+    await session.commit()
+    await session.refresh(transaction)
+    return transaction

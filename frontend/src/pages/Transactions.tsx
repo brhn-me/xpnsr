@@ -500,8 +500,8 @@ const Transactions: React.FC = () => {
                                             </td>
                                             <td className={`px-6 py-4 whitespace-nowrap text-right`}>
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold ${tx.type === 'income'
-                                                    ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                                    : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                                                    ? 'text-green-700 dark:text-green-400'
+                                                    : 'text-red-700 dark:text-red-400'
                                                     }`}>
                                                     {tx.type === 'income' ? '+' : '-'}${Math.abs(tx.amount).toFixed(2)}
                                                 </span>
@@ -558,7 +558,7 @@ const Transactions: React.FC = () => {
                         <div>
                             <h4 className="text-sm font-bold text-red-900 dark:text-red-300">Delete this transaction?</h4>
                             <p className="text-sm text-red-700 dark:text-red-200 mt-1">
-                                This action cannot be undone. The transaction will be permanently removed from your history.
+                                This action cannot be undone.
                             </p>
                         </div>
                     </div>

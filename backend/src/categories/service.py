@@ -16,72 +16,147 @@ async def ensure_defaults(session: AsyncSession):
     print("Populating default categories (DB is empty)...")
 
     defaults = [
-        # INCOME
-        {"title": "Salary", "type": "income", "icon": "wallet", "subcategories": [
-            {"title": "Bonus", "type": "income", "icon": "hand-coins"},
-            {"title": "Regular", "type": "income", "icon": "banknote"}
-        ]},
-        {"title": "Freelance", "type": "income", "icon": "briefcase", "subcategories": [
-            {"title": "Contract", "type": "income", "icon": "file-text"},
-            {"title": "Consulting", "type": "income", "icon": "file-text"}
-        ]},
-        {"title": "Investments", "type": "income", "icon": "trending-up", "subcategories": [
-            {"title": "Dividends", "type": "income", "icon": "coins"},
-            {"title": "Interest", "type": "income", "icon": "percent"},
-            {"title": "Crypto", "type": "income", "icon": "bitcoin"}
-        ]},
-        {"title": "Gifts", "type": "income", "icon": "gift", "subcategories": []},
-        {"title": "Other Income", "type": "income", "icon": "landmark", "subcategories": []},
-
-        # EXPENSES
-        {"title": "Housing", "type": "expense", "icon": "home", "subcategories": [
-            {"title": "Rent", "type": "expense", "icon": "home"},
-            {"title": "Utilities", "type": "expense", "icon": "zap"},
-            {"title": "Internet", "type": "expense", "icon": "wifi"},
-            {"title": "Maintenance", "type": "expense", "icon": "wrench"}
-        ]},
-        {"title": "Food", "type": "expense", "icon": "utensils", "subcategories": [
-            {"title": "Groceries", "type": "expense", "icon": "apple"},
-            {"title": "Dining Out", "type": "expense", "icon": "coffee"},
-            {"title": "Drinks", "type": "expense", "icon": "beer"},
-            {"title": "Snacks", "type": "expense", "icon": "cookie"}
-        ]},
-        {"title": "Transportation", "type": "expense", "icon": "car", "subcategories": [
-            {"title": "Fuel", "type": "expense", "icon": "fuel"},
-            {"title": "Public Transit", "type": "expense", "icon": "bus"},
-            {"title": "Maintenance", "type": "expense", "icon": "wrench"},
-            {"title": "Parking", "type": "expense", "icon": "landmark"}
-        ]},
-        {"title": "Entertainment", "type": "expense", "icon": "gamepad", "subcategories": [
-            {"title": "Movies", "type": "expense", "icon": "tv"},
-            {"title": "Music", "type": "expense", "icon": "music"},
-            {"title": "Games", "type": "expense", "icon": "gamepad"},
-            {"title": "Hobbies", "type": "expense", "icon": "globe"}
-        ]},
-        {"title": "Health", "type": "expense", "icon": "heart", "subcategories": [
-            {"title": "Medical", "type": "expense", "icon": "hospital"},
-            {"title": "Pharmacy", "type": "expense", "icon": "pill"},
-            {"title": "Fitness", "type": "expense", "icon": "dumbbell"}
-        ]},
-        {"title": "Shopping", "type": "expense", "icon": "shopping-cart", "subcategories": [
-            {"title": "Clothing", "type": "expense", "icon": "shirt"},
-            {"title": "Electronics", "type": "expense", "icon": "cpu"},
-            {"title": "Home", "type": "expense", "icon": "armchair"}
-        ]},
-        {"title": "Personal", "type": "expense", "icon": "user", "subcategories": [
-            {"title": "Education", "type": "expense", "icon": "graduation-cap"},
-            {"title": "Grooming", "type": "expense", "icon": "scissors"}
-        ]},
-        {"title": "Travel", "type": "expense", "icon": "plane", "subcategories": [
-            {"title": "Flights", "type": "expense", "icon": "plane"},
-            {"title": "Accommodation", "type": "expense", "icon": "building"},
-            {"title": "Activities", "type": "expense", "icon": "ticket"}
-        ]},
-        {"title": "Bills & Fees", "type": "expense", "icon": "credit-card", "subcategories": [
-            {"title": "Phone", "type": "expense", "icon": "smartphone"},
-            {"title": "Insurance", "type": "expense", "icon": "shield"},
-            {"title": "Taxes", "type": "expense", "icon": "receipt"}
-        ]}
+        {
+            "title": "Salary",
+            "type": "income",
+            "icon": "dollar",
+            "subcategories": [
+                {"title": "Job", "type": "income", "icon": "job"},
+                {"title": "Freelance", "type": "income", "icon": "deal"},
+                {"title": "Bonus", "type": "income", "icon": "income"}
+            ]
+        },
+        {
+            "title": "Investments",
+            "type": "income",
+            "icon": "trending-up",
+            "subcategories": [
+                {"title": "Dividends", "type": "income", "icon": "growth"},
+                {"title": "Crypto", "type": "income", "icon": "crypto"},
+                {"title": "Real Estate", "type": "income", "icon": "office"},
+                {"title": "Interest", "type": "income", "icon": "tax"}
+            ]
+        },
+        {
+            "title": "Gifts & Grants",
+            "type": "income",
+            "icon": "gift",
+            "subcategories": [
+                {"title": "Birthday", "type": "income", "icon": "celebration"},
+                {"title": "Holidays", "type": "income", "icon": "party"}
+            ]
+        },
+        {"title": "Loans", "type": "income", "icon": "income", "subcategories": []},
+        {
+            "title": "Housing",
+            "type": "expense",
+            "icon": "home",
+            "subcategories": [
+                {"title": "Rent", "type": "expense", "icon": "home"},
+                {"title": "Mortgage", "type": "expense", "icon": "bank"}
+            ]
+        },
+        {
+            "title": "Utility Bills",
+            "type": "expense",
+            "icon": "bill",
+            "subcategories": [
+                {"title": "TV", "type": "expense", "icon": "tv"},
+                {"title": "Laundry", "type": "expense", "icon": "cleaning"}
+            ]
+        },
+        {
+            "title": "Food",
+            "type": "expense",
+            "icon": "burger",
+            "subcategories": [
+                {"title": "Resturant", "type": "expense", "icon": "restaurant"},
+                {"title": "Drinks", "type": "expense", "icon": "coffee"},
+                {"title": "Snacks", "type": "expense", "icon": "snack"},
+                {"title": "Beers", "type": "expense", "icon": "beer"}
+            ]
+        },
+        {
+            "title": "Transportation",
+            "type": "expense",
+            "icon": "public-transport",
+            "subcategories": [
+                {"title": "Ship", "type": "expense", "icon": "marina"},
+                {"title": "Fuel", "type": "expense", "icon": "refuel"}
+            ]
+        },
+        {
+            "title": "Personal Care",
+            "type": "expense",
+            "icon": "vital",
+            "subcategories": [
+                {"title": "Grooming", "type": "expense", "icon": "grooming"},
+                {"title": "Fitness", "type": "expense", "icon": "gym"}
+            ]
+        },
+        {
+            "title": "Entertainment",
+            "type": "expense",
+            "icon": "tv",
+            "subcategories": [
+                {"title": "Movies", "type": "expense", "icon": "movie"},
+                {"title": "Games", "type": "expense", "icon": "gaming"},
+                {"title": "Music", "type": "expense", "icon": "music"},
+                {"title": "Subscriptions", "type": "expense", "icon": "cloudy"}
+            ]
+        },
+        {
+            "title": "Health",
+            "type": "expense",
+            "icon": "checkup",
+            "subcategories": [
+                {"title": "Doctor", "type": "expense", "icon": "checkup"},
+                {"title": "Pharmacy", "type": "expense", "icon": "meds"},
+                {"title": "Hospital", "type": "expense", "icon": "firstaid"},
+                {"title": "Health Insurance", "type": "expense", "icon": "shield"}
+            ]
+        },
+        {
+            "title": "Education",
+            "type": "expense",
+            "icon": "study",
+            "subcategories": [
+                {"title": "Tuition", "type": "expense", "icon": "study"},
+                {"title": "Books", "type": "expense", "icon": "learning"},
+                {"title": "Courses", "type": "expense", "icon": "knowledge"}
+            ]
+        },
+        {
+            "title": "Shopping",
+            "type": "expense",
+            "icon": "shopping-bag",
+            "subcategories": [
+                {"title": "Cloths", "type": "expense", "icon": "clothed"},
+                {"title": "Shoes", "type": "expense", "icon": "shoe"},
+                {"title": "Crockeries", "type": "expense", "icon": "cooking-pot"},
+                {"title": "Furnitures", "type": "expense", "icon": "furniture"},
+                {"title": "Electronics", "type": "expense", "icon": "laptop"},
+                {"title": "Sports", "type": "expense", "icon": "sports"}
+            ]
+        },
+        {
+            "title": "Traveling",
+            "type": "expense",
+            "icon": "resort",
+            "subcategories": [
+                {"title": "Documents", "type": "expense", "icon": "navigation"}
+            ]
+        },
+        {
+            "title": "Hobbies",
+            "type": "expense",
+            "icon": "art",
+            "subcategories": [
+                {"title": "Plants", "type": "expense", "icon": "ecology"},
+                {"title": "Pets", "type": "expense", "icon": "wildlife"}
+            ]
+        },
+        {"title": "Donations", "type": "expense", "icon": "income", "subcategories": []}
     ]
     
     order_counter = 0

@@ -1,34 +1,28 @@
 
 import uuid
-from sqlalchemy import Column, String, Float, Boolean, ForeignKey, Enum as SqEnum
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-import enum
-from ..database import Base
+from enum import Enum
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional
 
-class AccountType(str, enum.Enum):
+class AccountType(str, Enum):
     BANK = "BANK"
     MOBILE_WALLET = "MOBILE_WALLET"
     CASH = "CASH"
-    INVESTMENT = "INVESTMENT" # Placeholder in case we need a dedicated investment account type
 
-class Account(Base):
-    __tablename__ = "account"
+class AccountBase(SQLModel):
+    name: str = Field(index=True)
+    type: AccountType
+    currency: str = Field(default="USD")
+    balance: float = Field(default=0.0)
+    interest_rate: float = Field(default=0.0)
+    account_number: Optional[str] = None
+    bank_name: Optional[str] = None
+    branch_name: Optional[str] = None
+    is_active: bool = Field(default=True)
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+class Account(AccountBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id")
     
-    name = Column(String, nullable=False)
-    type = Column(SqEnum(AccountType), nullable=False)
-    currency = Column(String, default="USD", nullable=False)
-    balance = Column(Float, default=0.0, nullable=False)
-    interest_rate = Column(Float, default=0.0) # For savings accounts
-    
-    account_number = Column(String, nullable=True)
-    bank_name = Column(String, nullable=True)
-    branch_name = Column(String, nullable=True)
-
-    is_active = Column(Boolean, default=True)
-
-    # Relationships can be added here if needed, e.g. transactions
-    # transactions = relationship("Transaction", back_populates="account")
+    # Relationships
+    # transactions: List["Transaction"] = Relationship(back_populates="account")

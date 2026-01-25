@@ -1,43 +1,42 @@
 
-from sqlalchemy.orm import Session
+from typing import List, Optional
+from uuid import UUID
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from .models import Investment
 from .schemas import InvestmentCreate, InvestmentUpdate
-from uuid import UUID
-from typing import Optional
 
-def get_investments(db: Session, user_id: UUID):
-    return db.query(Investment).filter(Investment.user_id == user_id).all()
+async def get_investments(session: AsyncSession, user_id: UUID) -> List[Investment]:
+    statement = select(Investment).where(Investment.user_id == user_id)
+    result = await session.execute(statement)
+    return result.scalars().all()
 
-def get_investment(db: Session, investment_id: UUID, user_id: UUID):
-    return db.query(Investment).filter(Investment.id == investment_id, Investment.user_id == user_id).first()
+async def create_investment(session: AsyncSession, investment_in: InvestmentCreate, user_id: UUID) -> Investment:
+    investment = Investment(**investment_in.dict(), user_id=user_id)
+    session.add(investment)
+    await session.commit()
+    await session.refresh(investment)
+    return investment
 
-def create_investment(db: Session, investment: InvestmentCreate, user_id: UUID):
-    db_investment = Investment(
-        **investment.dict(),
-        user_id=user_id
-    )
-    db.add(db_investment)
-    db.commit()
-    db.refresh(db_investment)
-    return db_investment
-
-def update_investment(db: Session, investment_id: UUID, investment_update: InvestmentUpdate, user_id: UUID):
-    db_investment = get_investment(db, investment_id, user_id)
-    if not db_investment:
+async def update_investment(session: AsyncSession, investment_id: UUID, investment_in: InvestmentUpdate, user_id: UUID) -> Optional[Investment]:
+    investment = await session.get(Investment, investment_id)
+    if not investment or investment.user_id != user_id:
         return None
     
-    update_data = investment_update.dict(exclude_unset=True)
+    update_data = investment_in.dict(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(db_investment, key, value)
+        setattr(investment, key, value)
     
-    db.commit()
-    db.refresh(db_investment)
-    return db_investment
+    session.add(investment)
+    await session.commit()
+    await session.refresh(investment)
+    return investment
 
-def delete_investment(db: Session, investment_id: UUID, user_id: UUID):
-    db_investment = get_investment(db, investment_id, user_id)
-    if db_investment:
-        db.delete(db_investment)
-        db.commit()
-        return True
-    return False
+async def delete_investment(session: AsyncSession, investment_id: UUID, user_id: UUID) -> bool:
+    investment = await session.get(Investment, investment_id)
+    if not investment or investment.user_id != user_id:
+        return False
+    
+    await session.delete(investment)
+    await session.commit()
+    return True

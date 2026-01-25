@@ -10,6 +10,7 @@ import {
     Calendar,
     Wallet,
     TrendingUp,
+    PieChart,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import UserMenu from './UserMenu';
@@ -30,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         { name: 'Recurring', path: '/recurring', icon: Calendar },
         { name: 'Accounts', path: '/accounts', icon: Wallet },
         { name: 'Investments', path: '/investments', icon: TrendingUp },
+        { name: 'Budgets', path: '/budgets', icon: PieChart },
     ];
 
     return (

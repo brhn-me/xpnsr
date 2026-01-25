@@ -1,47 +1,42 @@
 
 import uuid
-from sqlalchemy import Column, String, Float, Boolean, ForeignKey, Date, Integer, Enum as SqEnum
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-import enum
-from ..database import Base
+from sqlmodel import SQLModel, Field
+from typing import Optional
+from datetime import date
+from enum import Enum
 
-class InvestmentType(str, enum.Enum):
-    FD = "FD" # Fixed Deposit
+class InvestmentType(str, Enum):
+    FD = "FD"
     BONDS = "BONDS"
-    DPS = "DPS" # Pension Scheme
+    DPS = "DPS"
     STOCK = "STOCK"
     TRADING = "TRADING"
 
-class InvestmentStatus(str, enum.Enum):
+class InvestmentStatus(str, Enum):
     ACTIVE = "ACTIVE"
     MATURED = "MATURED"
     CLOSED = "CLOSED"
 
-class Investment(Base):
-    __tablename__ = "investment"
+class InvestmentBase(SQLModel):
+    title: str = Field(index=True)
+    type: InvestmentType
+    account_id: uuid.UUID = Field(foreign_key="account.id")
+    
+    principal_amount: float
+    current_value: float
+    interest_rate: float = Field(default=0.0)
+    interest_amount: float = Field(default=0.0)
+    start_date: date
+    maturity_date: Optional[date] = None
+    tenure_months: int = Field(default=0)
+    
+    auto_renew: bool = Field(default=False)
+    tax_rate: float = Field(default=0.0)
+    tax_amount: float = Field(default=0.0)
+    status: InvestmentStatus = Field(default=InvestmentStatus.ACTIVE)
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    account_id = Column(UUID(as_uuid=True), ForeignKey("account.id"), nullable=True) # Optional source/linked account
-    
-    title = Column(String, nullable=False)
-    type = Column(SqEnum(InvestmentType), nullable=False)
-    
-    principal_amount = Column(Float, nullable=False)
-    current_value = Column(Float, nullable=False) # Needs manual update or logic to update
-    
-    interest_rate = Column(Float, default=0.0) # Annual percentage
-    interest_amount = Column(Float, default=0.0) # Projected or Actual
-    
-    start_date = Column(Date, nullable=False)
-    maturity_date = Column(Date, nullable=True) # Stocks might not have maturity
-    tenure_months = Column(Integer, default=0)
-    
-    auto_renew = Column(Boolean, default=False)
-    tax_rate = Column(Float, default=0.0) # Tax on profits/interest
-    tax_amount = Column(Float, default=0.0) # Calculated Tax
-    
-    status = Column(SqEnum(InvestmentStatus), default=InvestmentStatus.ACTIVE, nullable=False)
-
-    account = relationship("Account")
+class Investment(InvestmentBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id")
+    # Relationships
+    # account: "Account" = Relationship()

@@ -10,6 +10,8 @@ from src.categories.service import ensure_defaults
 from src.transactions.router import router as transactions_router
 from src.reports.router import router as reports_router
 from src.recurring.router import router as recurring_router
+from src.accounts.router import router as accounts_router
+from src.investments.router import router as investments_router
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -50,6 +52,8 @@ app.include_router(categories_router, prefix=f"{settings.API_V1_STR}/categories"
 app.include_router(transactions_router, prefix=f"{settings.API_V1_STR}/transactions", tags=["transactions"])
 app.include_router(reports_router, prefix=f"{settings.API_V1_STR}/reports", tags=["reports"])
 app.include_router(recurring_router, prefix=f"{settings.API_V1_STR}/recurring", tags=["recurring"])
+app.include_router(accounts_router, prefix=f"{settings.API_V1_STR}/accounts", tags=["accounts"])
+app.include_router(investments_router, prefix=f"{settings.API_V1_STR}/investments", tags=["investments"])
 
 @app.get("/")
 async def root():

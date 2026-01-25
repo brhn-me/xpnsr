@@ -9,6 +9,7 @@ import RecurringBills from './pages/RecurringBills';
 import Accounts from './pages/Accounts';
 import Investments from './pages/Investments';
 import Budgets from './pages/Budgets';
+import Taxes from './pages/Taxes';
 import { useAuth } from './context/AuthContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,7 @@ function App() {
         <Route path="accounts" element={<Accounts />} />
         <Route path="investments" element={<Investments />} />
         <Route path="budgets" element={<Budgets />} />
+        <Route path="taxes" element={<Taxes />} />
       </Route>
     </Routes>
   );

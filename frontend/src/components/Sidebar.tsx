@@ -32,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         { name: 'Accounts', path: '/accounts', icon: Wallet },
         { name: 'Investments', path: '/investments', icon: TrendingUp },
         { name: 'Budgets', path: '/budgets', icon: PieChart },
+        { name: 'Taxes', path: '/taxes', icon: Receipt },
     ];
 
     return (

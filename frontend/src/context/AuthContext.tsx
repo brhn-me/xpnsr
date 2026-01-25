@@ -28,17 +28,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(res.data);
         } catch (error) {
             console.error("Failed to fetch user", error);
-            // Optional: logout if token is invalid
-            // logout();
+            // If the error is 401, the interceptor will handle logout, 
+            // but we ensure user state is cleared here just in case.
+            setUser(null);
         }
     };
 
     useEffect(() => {
+        // Set up the interceptor to catch 401s globally
+        const interceptorId = api.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 401) {
+                    logout();
+                }
+                return Promise.reject(error);
+            }
+        );
+
         if (token) {
             fetchUser();
         } else {
             setUser(null);
         }
+
+        // Clean up interceptor on unmount
+        return () => {
+            api.interceptors.response.eject(interceptorId);
+        };
     }, [token]);
 
     const login = async (newToken: string) => {

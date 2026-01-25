@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
+import Reports from './pages/Reports';
+import RecurringBills from './pages/RecurringBills';
 import { useAuth } from './context/AuthContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -19,6 +21,8 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="transactions" element={<Transactions />} />
         <Route path="categories" element={<Categories />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="recurring" element={<RecurringBills />} />
       </Route>
     </Routes>
   );

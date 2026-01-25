@@ -6,6 +6,8 @@ import {
     Tags,
     ChevronLeft,
     ChevronRight,
+    BarChart3,
+    Calendar,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import UserMenu from './UserMenu';
@@ -22,6 +24,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
         { name: 'Transactions', path: '/transactions', icon: Receipt },
         { name: 'Categories', path: '/categories', icon: Tags },
+        { name: 'Reports', path: '/reports', icon: BarChart3 },
+        { name: 'Recurring', path: '/recurring', icon: Calendar },
     ];
 
     return (

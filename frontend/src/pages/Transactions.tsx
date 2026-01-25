@@ -3,9 +3,10 @@ import { useInView } from 'react-intersection-observer';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { format } from 'date-fns';
-import { Search, Filter, Edit2, Trash2, Calendar, FileText, Clock, X, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+
+import { Search, Edit2, Trash2, Calendar, FileText, Clock, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import Modal from '../components/Modal';
-import Calculator from '../components/Calculator';
+import TransactionForm from '../components/transactions/TransactionForm';
 import { getIconComponent } from '../lib/icons';
 
 interface Transaction {
@@ -43,35 +44,15 @@ const Transactions: React.FC = () => {
     const [editingTx, setEditingTx] = useState<Transaction | null>(null);
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
-    // Form State
-    // Amount is now a string to allow calculator expressions
-    const [amount, setAmount] = useState('');
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
     const [type, setType] = useState<'income' | 'expense'>('expense');
-    const [categoryId, setCategoryId] = useState(''); // Stores the FINAL selected category (could be parent or sub)
-    const [selectedParentId, setSelectedParentId] = useState<string>(''); // Used for UI navigation
 
-    // Date & Time Split
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [time, setTime] = useState('');
-    const [showDetails, setShowDetails] = useState(false);
-
-    // Reset parent/category when modal closes or type changes, if not editing
     useEffect(() => {
         if (!isModalOpen) {
             setEditingTx(null);
-            resetForm();
         }
     }, [isModalOpen]);
 
-    useEffect(() => {
-        // When switching types in Add mode, reset category
-        if (!editingTx && isModalOpen) {
-            setCategoryId('');
-            setSelectedParentId('');
-        }
-    }, [type]);
+
 
     // Fetch Categories
     const { data: categories = [] } = useQuery<Category[]>({
@@ -96,36 +77,7 @@ const Transactions: React.FC = () => {
         return map;
     }, [categories]);
 
-    // Populate form when editing
-    useEffect(() => {
-        if (editingTx) {
-            setAmount(editingTx.amount.toString());
-            setTitle(editingTx.title);
-            setDescription(editingTx.description || '');
-            setType(editingTx.type);
 
-            // Extract date and time
-            const dt = new Date(editingTx.date);
-            setDate(dt.toISOString().split('T')[0]);
-            setTime(dt.toTimeString().split(' ')[0].slice(0, 5));
-
-            // Handle Category Pre-selection
-            const cat = categoryMap.get(editingTx.category_id);
-            if (cat) {
-                setCategoryId(cat.id);
-                if (cat.parent_category_id) {
-                    setSelectedParentId(cat.parent_category_id);
-                } else {
-                    setSelectedParentId(cat.id);
-                }
-            }
-
-            // Show details if they exist
-            if (editingTx.title || editingTx.description) {
-                setShowDetails(true);
-            }
-        }
-    }, [editingTx, categoryMap]);
 
     const fetchTransactions = async (pageParam: number, searchTerm: string, typeFilter: string) => {
         const params = new URLSearchParams();
@@ -211,62 +163,7 @@ const Transactions: React.FC = () => {
         }
     });
 
-    const resetForm = () => {
-        setAmount('');
-        setTitle('');
-        setDescription('');
-        setCategoryId('');
-        setSelectedParentId('');
-        setShowDetails(false);
-        const now = new Date();
-        setDate(now.toISOString().split('T')[0]);
-        setTime(now.toTimeString().split(' ')[0].slice(0, 5));
-    };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Evaluate amount if it's an expression
-        let finalAmount = 0;
-        try {
-            // Check if it needs evaluation (contains math operators)
-            if (/[+\-*/]/.test(amount)) {
-                // simple sanitize
-                const sanitized = amount.replace(/[^0-9+\-*/().]/g, '');
-                // eslint-disable-next-line no-new-func
-                const res = new Function('return ' + sanitized)();
-                finalAmount = parseFloat(res);
-            } else {
-                finalAmount = parseFloat(amount);
-            }
-        } catch (e) {
-            alert("Invalid amount format");
-            return;
-        }
-
-        if (isNaN(finalAmount)) {
-            alert("Please enter a valid amount");
-            return;
-        }
-
-        // combine date and time
-        const combined = new Date(`${date}T${time}:00`).toISOString();
-
-        const payload = {
-            amount: parseFloat(finalAmount.toFixed(2)),
-            title: title,
-            description,
-            type,
-            category_id: categoryId,
-            date: combined
-        };
-
-        if (editingTx) {
-            updateMutation.mutate({ ...payload, id: editingTx.id });
-        } else {
-            createMutation.mutate(payload);
-        }
-    };
 
     const confirmDelete = () => {
         if (deleteId) {
@@ -281,9 +178,7 @@ const Transactions: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const activeCategories = useMemo(() => {
-        return categories.filter((c: Category) => c.type === type);
-    }, [categories, type]);
+
 
     const FilterPill = ({ label, value, current, onClick }: { label: string, value: string, current: string, onClick: (v: string) => void }) => (
         <button
@@ -297,84 +192,7 @@ const Transactions: React.FC = () => {
         </button>
     );
 
-    // --- NEW GRID COMPONENTS ---
 
-    // Parent Grid
-    const CategoryGrid = () => {
-        return (
-            <div className="grid grid-cols-5 gap-2">
-                {activeCategories.map((cat) => {
-                    const Icon = getIconComponent(cat.icon);
-                    const isSelected = selectedParentId === cat.id;
-
-                    return (
-                        <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => {
-                                setSelectedParentId(cat.id);
-                                setCategoryId(cat.id); // Default to parent
-                            }}
-                            className={`flex flex-col items-center justify-center p-1.5 rounded-xl border-2 transition-all ${isSelected
-                                ? `border-${type === 'income' ? 'green' : 'red'}-500 bg-${type === 'income' ? 'green' : 'red'}-50 dark:bg-${type === 'income' ? 'green' : 'red'}-900/20`
-                                : 'border-transparent bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                }`}
-                        >
-                            <div className={`p-1.5 rounded-full mb-1 ${isSelected
-                                ? `bg-${type === 'income' ? 'green' : 'red'}-100 text-${type === 'income' ? 'green' : 'red'}-600`
-                                : 'bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-300'
-                                }`}>
-                                <Icon className="w-4 h-4" />
-                            </div>
-                            <span className={`text-[10px] font-medium text-center truncate w-full ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'
-                                }`}>
-                                {cat.title}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    // Subcategory Grid
-    const SubcategoryGrid = () => {
-        const parent = activeCategories.find(c => c.id === selectedParentId);
-        if (!parent || !parent.subcategories || parent.subcategories.length === 0) return null;
-
-        return (
-            <div className="animate-fadeIn mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                <div className="grid grid-cols-3 gap-2">
-                    {parent.subcategories.map((sub) => {
-                        const Icon = getIconComponent(sub.icon);
-                        const isSelected = categoryId === sub.id;
-                        return (
-                            <button
-                                key={sub.id}
-                                type="button"
-                                onClick={() => setCategoryId(sub.id)}
-                                className={`flex items-center p-2 rounded-lg border transition-all ${isSelected
-                                    ? `bg-${type === 'income' ? 'green' : 'red'}-50 border-${type === 'income' ? 'green' : 'red'}-200`
-                                    : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600'
-                                    }`}
-                            >
-                                <div className={`p-1 rounded-full mr-2 ${isSelected
-                                    ? `bg-white text-${type === 'income' ? 'green' : 'red'}-600`
-                                    : 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300'
-                                    }`}>
-                                    <Icon className="w-3.5 h-3.5" />
-                                </div>
-                                <span className={`text-xs truncate ${isSelected ? `text-${type === 'income' ? 'green' : 'red'}-900` : 'text-gray-700 dark:text-gray-200'
-                                    }`}>
-                                    {sub.title}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    };
 
 
     return (
@@ -579,151 +397,27 @@ const Transactions: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* Main Transaction Modal - 2 Columns */}
+            {/* Main Transaction Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={editingTx ? "Edit Transaction" : (type === 'income' ? "Add Income" : "Add Expense")}
-                size="4xl" // Wider modal
+                size="4xl"
             >
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-
-                        {/* LEFT COLUMN: Inputs (Span 3) */}
-                        <div className="md:col-span-3 space-y-6">
-
-                            {/* Date & Time */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={date}
-                                        onChange={(e) => setDate(e.target.value)}
-                                        className="block w-full rounded-xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 text-sm py-2.5 px-3 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Time</label>
-                                    <input
-                                        type="time"
-                                        required
-                                        value={time}
-                                        onChange={(e) => setTime(e.target.value)}
-                                        className="block w-full rounded-xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 text-sm py-2.5 px-3 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Categories */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
-                                <CategoryGrid />
-                                <SubcategoryGrid />
-                            </div>
-
-                            {/* Additional Details Toggle */}
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowDetails(!showDetails)}
-                                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex items-center gap-1 transition-colors"
-                                >
-                                    {showDetails ? '- Hide details' : '+ More Details'}
-                                </button>
-                            </div>
-
-                            {/* Title & Note (Collapsible) */}
-                            {showDetails && (
-                                <div className="space-y-4 animate-fadeIn">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Title <span className="text-gray-400 font-normal lowercase">(optional)</span></label>
-                                        <input
-                                            type="text"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            placeholder="e.g. Lunch at Joe's"
-                                            className="block w-full rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm py-2.5 px-3 dark:bg-gray-800 dark:border-gray-600 dark:text-white placeholder-gray-400"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Note <span className="text-gray-400 font-normal lowercase">(optional)</span></label>
-                                        <textarea
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            placeholder="Add extra details..."
-                                            className="block w-full rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm py-2.5 px-3 dark:bg-gray-800 dark:border-gray-600 dark:text-white placeholder-gray-400 resize-none h-24"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                        </div>
-
-                        {/* RIGHT COLUMN: Calculator (Span 2) */}
-                        <div className="md:col-span-2 flex flex-col gap-4">
-
-                            {/* Amount Display */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Amount</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-3 text-gray-500 text-lg font-bold z-10">$</span>
-                                    {/* Calculated input type text to allow expressions */}
-                                    <input
-                                        type="text"
-                                        required
-                                        value={amount}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            // Allow only numbers and math operators
-                                            if (/^[0-9+\-*/().\s]*$/.test(val)) {
-                                                setAmount(val);
-                                            }
-                                        }}
-                                        className="block w-full rounded-2xl border-gray-200 bg-gray-50 pl-9 pr-4 focus:border-blue-500 focus:ring-blue-500 text-2xl py-3 dark:bg-gray-800 dark:border-gray-600 dark:text-white font-bold tracking-tight text-right shadow-inner"
-                                        placeholder="0.00"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Calculator Keypad */}
-                            <div className="flex-1">
-                                <Calculator value={amount} onChange={setAmount} />
-                            </div>
-
-                            {/* Actions (placed here or below? Below seems better for flow, or stick to bottom of form) */}
-                            {/* Moving actions to span full width below grid? Or keep inside right col? 
-                                User asked for 2 columns. Let's put actions at the very bottom of the right column?
-                                Or maybe better: keep generic actions at bottom of form, taking full width.
-                            */}
-                        </div>
-                    </div>
-
-                    {/* Bottom Actions - Spanning full width */}
-                    <div className="flex justify-end pt-8 gap-3 border-t border-gray-100 dark:border-gray-700 mt-6">
-                        <button
-                            type="button"
-                            onClick={() => setIsModalOpen(false)}
-                            className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors dark:text-gray-300 dark:hover:bg-gray-700"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={createMutation.isPending || updateMutation.isPending}
-                            className={`px-8 py-2.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${type === 'income'
-                                ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30 hover:shadow-green-500/40'
-                                : 'bg-red-600 hover:bg-red-700 shadow-red-500/30 hover:shadow-red-500/40'
-                                }`}
-                        >
-                            {editingTx
-                                ? (updateMutation.isPending ? 'Updating...' : 'Update')
-                                : (createMutation.isPending ? 'Saving...' : 'Save')
-                            }
-                        </button>
-                    </div>
-                </form>
+                <TransactionForm
+                    type={type}
+                    initialData={editingTx}
+                    onCancel={() => setIsModalOpen(false)}
+                    onSubmit={(data) => {
+                        if (editingTx) {
+                            updateMutation.mutate({ ...data, id: editingTx.id });
+                        } else {
+                            createMutation.mutate(data);
+                        }
+                    }}
+                    isSubmitting={createMutation.isPending || updateMutation.isPending}
+                    submitLabel={editingTx ? "Update" : "Save"}
+                />
             </Modal>
         </div>
     );

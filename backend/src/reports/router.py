@@ -43,3 +43,28 @@ async def get_category_pie(
     session: AsyncSession = Depends(get_session)
 ):
     return await report_service.get_category_pie(session, current_user.id, type, start_date, end_date)
+
+@router.get("/yearly-summary")
+async def get_yearly_summary(
+    year: int = Query(default=datetime.now().year),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    return await report_service.get_yearly_summary(session, current_user.id, year)
+
+@router.get("/category-trends")
+async def get_category_trends(
+    year: int = Query(default=datetime.now().year),
+    limit: int = 5,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    return await report_service.get_category_trends(session, current_user.id, year, limit)
+
+@router.get("/daily-activity")
+async def get_daily_activity(
+    year: int = Query(default=datetime.now().year),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    return await report_service.get_daily_activity(session, current_user.id, year)

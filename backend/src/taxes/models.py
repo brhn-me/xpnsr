@@ -17,3 +17,7 @@ class TaxSettings(SQLModel, table=True):
     year: int
     standard_deduction: float = Field(default=0.0)
     tax_free_allowance: float = Field(default=0.0)
+
+class TaxExemptCategory(SQLModel, table=True):
+    category_id: uuid.UUID = Field(primary_key=True, foreign_key="category.id")
+    user_id: uuid.UUID = Field(primary_key=True, foreign_key="user.id")

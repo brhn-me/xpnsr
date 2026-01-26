@@ -5,8 +5,8 @@ from sqlmodel import select, func, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.transactions.models import Transaction, TransactionType
 from src.categories.models import Category
-from .models import TaxBracket, TaxSettings
-from .schemas import TaxBracketCreate, TaxSummary
+from .models import TaxBracket, TaxSettings, TaxExemptCategory
+from .schemas import TaxBracketCreate, TaxSummary, TaxExemptionCreate, TaxSettingsUpdate
 
 async def get_brackets(session: AsyncSession, user_id: UUID, year: int) -> List[TaxBracket]:
     statement = select(TaxBracket).where(TaxBracket.user_id == user_id, TaxBracket.year == year).order_by(TaxBracket.min_income)
@@ -20,31 +20,84 @@ async def create_bracket(session: AsyncSession, bracket_in: TaxBracketCreate, us
     await session.refresh(bracket)
     return bracket
 
+async def get_settings(session: AsyncSession, user_id: UUID, year: int) -> TaxSettings:
+    statement = select(TaxSettings).where(TaxSettings.user_id == user_id, TaxSettings.year == year)
+    result = await session.execute(statement)
+    settings = result.scalars().first()
+    if not settings:
+        settings = TaxSettings(user_id=user_id, year=year)
+        session.add(settings)
+        await session.commit()
+        await session.refresh(settings)
+    return settings
+
+async def update_settings(session: AsyncSession, user_id: UUID, year: int, settings_in: TaxSettingsUpdate) -> TaxSettings:
+    settings = await get_settings(session, user_id, year)
+    settings.standard_deduction = settings_in.standard_deduction
+    settings.tax_free_allowance = settings_in.tax_free_allowance
+    session.add(settings)
+    await session.commit()
+    await session.refresh(settings)
+    return settings
+
+async def toggle_exemption(session: AsyncSession, user_id: UUID, exemption_in: TaxExemptionCreate) -> bool:
+    statement = select(TaxExemptCategory).where(
+        TaxExemptCategory.user_id == user_id,
+        TaxExemptCategory.category_id == exemption_in.category_id
+    )
+    result = await session.execute(statement)
+    existing = result.scalars().first()
+    
+    if exemption_in.is_exempt and not existing:
+        new_exempt = TaxExemptCategory(user_id=user_id, category_id=exemption_in.category_id)
+        session.add(new_exempt)
+    elif not exemption_in.is_exempt and existing:
+        await session.delete(existing)
+    
+    await session.commit()
+    return exemption_in.is_exempt
+
+async def get_exempt_categories(session: AsyncSession, user_id: UUID) -> List[UUID]:
+    statement = select(TaxExemptCategory.category_id).where(TaxExemptCategory.user_id == user_id)
+    result = await session.execute(statement)
+    return result.scalars().all()
+
 async def calculate_summary(session: AsyncSession, user_id: UUID, year: int) -> TaxSummary:
-    # 1. Total Income
+    # 0. Get Exempt Categories
+    exempt_cats_res = await session.execute(select(TaxExemptCategory.category_id).where(TaxExemptCategory.user_id == user_id))
+    exempt_ids = exempt_cats_res.scalars().all()
+
+    # 1. Total Income (Excluding Exempt)
     income_query = select(func.sum(Transaction.amount)).where(
         Transaction.user_id == user_id,
         Transaction.type == TransactionType.INCOME,
         extract('year', Transaction.date) == year
     )
+    if exempt_ids:
+        income_query = income_query.where(Transaction.category_id.not_in(exempt_ids))
+
     income_res = await session.execute(income_query)
-    total_income = income_res.scalar() or 0.0
+    taxable_income_base = income_res.scalar() or 0.0
+    
+    # 1a. Total Gross Income (For display)
+    gross_query = select(func.sum(Transaction.amount)).where(
+        Transaction.user_id == user_id,
+        Transaction.type == TransactionType.INCOME,
+        extract('year', Transaction.date) == year
+    )
+    gross_res = await session.execute(gross_query)
+    total_gross_income = gross_res.scalar() or 0.0
 
     # 2. Tax Paid at Source (TPS)
     tps_query = select(func.sum(Transaction.tax_deducted_at_source)).where(
         Transaction.user_id == user_id,
-        Transaction.type == TransactionType.INCOME, # Assuming TPS is on Income
+        Transaction.type == TransactionType.INCOME, 
         extract('year', Transaction.date) == year
     )
     tps_res = await session.execute(tps_query)
     paid_at_source = tps_res.scalar() or 0.0
 
-    # 3. Tax Paid Manually (Expense category = 'Tax' or similar)
-    # We need to find categories usually named 'Tax'. Or we can rely on a specific logic.
-    # For now, let's look for categories with 'tax' in title (case insensitive)
-    # This is a bit loose but MVP friendly.
-    # Better: User explicitly categorized as 'Tax'. 
-    # Let's query transactions joined with Category where category.title ilike '%tax%'
+    # 3. Tax Paid Manually
     manual_tax_query = select(func.sum(Transaction.amount)).join(Category).where(
         Transaction.user_id == user_id,
         Transaction.type == TransactionType.EXPENSE,
@@ -55,54 +108,25 @@ async def calculate_summary(session: AsyncSession, user_id: UUID, year: int) -> 
     paid_manually = manual_res.scalar() or 0.0
 
     # 4. Settings (Deductions)
-    settings_query = select(TaxSettings).where(TaxSettings.user_id == user_id, TaxSettings.year == year)
-    settings_res = await session.execute(settings_query)
-    settings = settings_res.scalars().first()
+    settings = await get_settings(session, user_id, year)
     
-    deduction = settings.standard_deduction if settings else 0.0
-    allowance = settings.tax_free_allowance if settings else 0.0
+    deduction = settings.standard_deduction
+    allowance = settings.tax_free_allowance
 
     # 5. Calculate Liability using Brackets
     brackets = await get_brackets(session, user_id, year)
     
-    taxable_income = max(0, total_income - deduction - allowance)
+    taxable_income = max(0, taxable_income_base - deduction - allowance)
     liability = 0.0
     
-    if not brackets:
-        # Fallback flat rate if no brackets? Or 0?
-        liability = 0.0
-    else:
-        remaining_income = taxable_income
-        # Logic: sequential brackets.
-        # Assuming brackets are 0-10k, 10k-50k, etc.
-        # But usually users enter brackets as "First 10k @ 0%", "Next 40k @ 10%".
-        # Current model: min_income, max_income.
-        # Let's assume they cover the whole range.
-        
-        # Sort by min_income
+    if brackets:
         brackets.sort(key=lambda b: b.min_income)
-        
-        # Better logic: Progressive calculation
-        # If income is 50000.
-        # Bracket 1: 0 - 10000 @ 0% -> Tax on 10000 = 0.
-        # Bracket 2: 10000 - infinity @ 10% -> Tax on (50000-10000) = 4000.
-        
         for bracket in brackets:
             if taxable_income < bracket.min_income:
                 continue
-                
-            # Calculate overlap
+            
             upper = bracket.max_income if bracket.max_income else float('inf')
             lower = bracket.min_income
-            
-            # Income captured in this bracket
-            # The bracket applies to income BETWEEN min and max.
-            # So if income is 50,000. Bracket is 10k-50k. 
-            # Income inside this bracket is min(50k, max) - min.
-            
-            # Wait, standard bracket definition is "Income between X and Y".
-            # Amount to tax = min(assessable, upper) - lower.
-            # Only if assessable > lower.
             
             assessable_in_bracket = min(taxable_income, upper) - lower
             if assessable_in_bracket > 0:
@@ -110,11 +134,11 @@ async def calculate_summary(session: AsyncSession, user_id: UUID, year: int) -> 
 
     return TaxSummary(
         year=year,
-        total_income=total_income,
+        total_income=total_gross_income, # Return Gross
         taxable_income=taxable_income,
         total_tax_liability=liability,
         tax_paid_at_source=paid_at_source,
         tax_paid_manually=paid_manually,
         tax_due=liability - (paid_at_source + paid_manually),
-        transactions_count=0 # Placeholder or fetch count if needed
+        transactions_count=0 
     )

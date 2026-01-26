@@ -26,3 +26,11 @@ class TaxSummary(SQLModel):
     tax_paid_manually: float
     tax_due: float
     transactions_count: int
+
+class TaxExemptionCreate(SQLModel):
+    category_id: UUID
+    is_exempt: bool
+
+class TaxSettingsUpdate(SQLModel):
+    standard_deduction: float
+    tax_free_allowance: float

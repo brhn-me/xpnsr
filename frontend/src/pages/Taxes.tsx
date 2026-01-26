@@ -43,6 +43,26 @@ interface IncomeTransaction {
     category_id: string;
 }
 
+interface Filing {
+    year: number;
+    full_name: string;
+    tax_id?: string;
+    employment_status?: string;
+    basic_salary: number;
+    house_rent: number;
+    medical_allowance: number;
+    conveyance: number;
+    business_income: number;
+    business_expense: number;
+    other_income: number;
+    provident_fund: number;
+    insurance: number;
+    savings_certificate: number;
+    donations: number;
+    dependents: number;
+    disability_relief: boolean;
+}
+
 const Taxes: React.FC = () => {
     const queryClient = useQueryClient();
     const [year, setYear] = useState(new Date().getFullYear());
@@ -169,6 +189,199 @@ const Taxes: React.FC = () => {
         setIsSettingsModalOpen(false);
     };
 
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'filing'>('dashboard');
+    const [filingStep, setFilingStep] = useState(1);
+
+    // Fetch Filing
+    const { data: filing, refetch: refetchFiling } = useQuery<Filing | null>({
+        queryKey: ['taxes', 'filing', year],
+        queryFn: async () => {
+            try {
+                const res = await api.get(`/taxes/filing/${year}`);
+                return res.data; // might be null
+            } catch (e) {
+                return null;
+            }
+        }
+    });
+
+    const createFilingMutation = useMutation({
+        mutationFn: (data: Filing) => api.post(`/taxes/filing/${year}`, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['taxes', 'filing', year] });
+            alert("Filing Saved!");
+        }
+    });
+
+    const handleFilingSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const form = e.target as HTMLFormElement;
+        const formData = new FormData(form);
+
+        const data: Filing = {
+            year,
+            full_name: formData.get('full_name') as string,
+            tax_id: formData.get('tax_id') as string,
+            employment_status: formData.get('employment_status') as string,
+            basic_salary: parseFloat(formData.get('basic_salary') as string || '0'),
+            house_rent: parseFloat(formData.get('house_rent') as string || '0'),
+            medical_allowance: parseFloat(formData.get('medical_allowance') as string || '0'),
+            conveyance: parseFloat(formData.get('conveyance') as string || '0'),
+            business_income: parseFloat(formData.get('business_income') as string || '0'),
+            business_expense: parseFloat(formData.get('business_expense') as string || '0'),
+            other_income: parseFloat(formData.get('other_income') as string || '0'),
+            provident_fund: parseFloat(formData.get('provident_fund') as string || '0'),
+            insurance: parseFloat(formData.get('insurance') as string || '0'),
+            savings_certificate: parseFloat(formData.get('savings_certificate') as string || '0'),
+            donations: parseFloat(formData.get('donations') as string || '0'),
+            dependents: parseInt(formData.get('dependents') as string || '0'),
+            disability_relief: formData.get('disability_relief') === 'on'
+        };
+
+        createFilingMutation.mutate(data);
+    };
+
+    if (activeTab === 'filing') {
+        return (
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                <div className="flex items-center gap-4 mb-6">
+                    <button onClick={() => setActiveTab('dashboard')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        <ChevronLeft className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                    </button>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">File Tax Return ({year})</h1>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-8 shadow-sm">
+                    <div className="flex justify-between mb-8 text-sm font-medium text-gray-500">
+                        <span className={filingStep >= 1 ? 'text-blue-600' : ''}>1. Personal Info</span>
+                        <span className={filingStep >= 2 ? 'text-blue-600' : ''}>2. Income Details</span>
+                        <span className={filingStep >= 3 ? 'text-blue-600' : ''}>3. Deductions</span>
+                        <span className={filingStep >= 4 ? 'text-blue-600' : ''}>4. Review</span>
+                    </div>
+
+                    <form onSubmit={handleFilingSubmit} className="space-y-6">
+                        {filingStep === 1 && (
+                            <div className="space-y-4 animate-fadeIn">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Personal Information</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                                        <input name="full_name" defaultValue={filing?.full_name} required className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tax ID / TIN</label>
+                                        <input name="tax_id" defaultValue={filing?.tax_id} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employment Status</label>
+                                        <select name="employment_status" defaultValue={filing?.employment_status} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white">
+                                            <option value="Employed">Employed</option>
+                                            <option value="Self-Employed">Self-Employed</option>
+                                            <option value="Unemployed">Unemployed</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {filingStep === 2 && (
+                            <div className="space-y-4 animate-fadeIn">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Income Breakdown</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Basic Salary</label>
+                                        <input type="number" name="basic_salary" defaultValue={filing?.basic_salary} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">House Rent</label>
+                                        <input type="number" name="house_rent" defaultValue={filing?.house_rent} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Medical Allowance</label>
+                                        <input type="number" name="medical_allowance" defaultValue={filing?.medical_allowance} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Conveyance</label>
+                                        <input type="number" name="conveyance" defaultValue={filing?.conveyance} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div className="col-span-2 border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
+                                        <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">Business & Other</label>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Income</label>
+                                        <input type="number" name="business_income" defaultValue={filing?.business_income} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Expenses</label>
+                                        <input type="number" name="business_expense" defaultValue={filing?.business_expense} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Other Income</label>
+                                        <input type="number" name="other_income" defaultValue={filing?.other_income} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {filingStep === 3 && (
+                            <div className="space-y-4 animate-fadeIn">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Deductions & Reliefs</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Provident Fund</label>
+                                        <input type="number" name="provident_fund" defaultValue={filing?.provident_fund} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Life Insurance Premium</label>
+                                        <input type="number" name="insurance" defaultValue={filing?.insurance} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Savings Certificate</label>
+                                        <input type="number" name="savings_certificate" defaultValue={filing?.savings_certificate} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Approved Donations</label>
+                                        <input type="number" name="donations" defaultValue={filing?.donations} className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-white" />
+                                    </div>
+                                    <div className="col-span-2 pt-4">
+                                        <div className="flex items-center gap-2">
+                                            <input type="checkbox" name="disability_relief" defaultChecked={filing?.disability_relief} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Disability Relief Claim</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {filingStep === 4 && (
+                            <div className="space-y-4 animate-fadeIn text-center py-8">
+                                <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/40 text-blue-600 rounded-full flex items-center justify-center mb-4">
+                                    <Receipt className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Ready to File?</h3>
+                                <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                                    Review your details. By clicking Update, you save this filing snapshot.
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex justify-between pt-6 border-t border-gray-100 dark:border-gray-700">
+                            {filingStep > 1 ? (
+                                <button type="button" onClick={() => setFilingStep(s => s - 1)} className="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-xl">Back</button>
+                            ) : <div></div>}
+
+                            {filingStep < 4 ? (
+                                <button type="button" onClick={() => setFilingStep(s => s + 1)} className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20">Next Step</button>
+                            ) : (
+                                <button type="submit" className="px-8 py-2.5 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 shadow-lg shadow-green-500/30">Save & Update</button>
+                            )}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -190,6 +403,10 @@ const Taxes: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
+                    <button onClick={() => setActiveTab('filing')} className="flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-500/30">
+                        <Receipt className="w-5 h-5 mr-2" />
+                        File Return
+                    </button>
                     <button onClick={() => setIsSettingsModalOpen(true)} className="flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                         <Settings className="w-5 h-5 mr-2" />
                         Settings

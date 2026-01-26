@@ -90,3 +90,20 @@ async def update_transaction_tps(
     session.add(trans)
     await session.commit()
     return {"ok": True}
+
+@router.get("/filing/{year}", response_model=schemas.TaxFilingRead | None)
+async def get_filing(
+    year: int,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    return await service.get_filing(session, current_user.id, year)
+
+@router.post("/filing/{year}", response_model=schemas.TaxFilingRead)
+async def create_filing(
+    filing: schemas.TaxFilingCreate,
+    year: int,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    return await service.create_or_update_filing(session, current_user.id, year, filing)

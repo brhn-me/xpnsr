@@ -1,6 +1,6 @@
-
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 from sqlmodel import select, func, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.transactions.models import Transaction, TransactionType
@@ -142,3 +142,27 @@ async def calculate_summary(session: AsyncSession, user_id: UUID, year: int) -> 
         tax_due=liability - (paid_at_source + paid_manually),
         transactions_count=0 
     )
+
+from .models import TaxFiling
+from .schemas import TaxFilingCreate
+
+async def get_filing(session: AsyncSession, user_id: UUID, year: int) -> TaxFiling | None:
+    statement = select(TaxFiling).where(TaxFiling.user_id == user_id, TaxFiling.year == year)
+    result = await session.execute(statement)
+    return result.scalars().first()
+
+async def create_or_update_filing(session: AsyncSession, user_id: UUID, year: int, filing_in: TaxFilingCreate) -> TaxFiling:
+    filing = await get_filing(session, user_id, year)
+    if not filing:
+        filing = TaxFiling(user_id=user_id, year=year, **filing_in.dict(exclude={'year'}))
+        session.add(filing)
+    else:
+        filing_data = filing_in.dict(exclude={'year'}, exclude_unset=True)
+        for key, value in filing_data.items():
+            setattr(filing, key, value)
+        filing.updated_at = datetime.utcnow()
+        session.add(filing)
+    
+    await session.commit()
+    await session.refresh(filing)
+    return filing
